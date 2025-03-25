@@ -14,13 +14,15 @@ if (!file_exists($mealsFile)) {
             'name' => 'Oatmeal',
             'protein' => 10,
             'carbs' => 50,
-            'fat' => 5
+            'fat' => 5,
+            'color' => 'blue'
         ],
         [
             'name' => 'Chicken Salad',
             'protein' => 30,
             'carbs' => 15,
-            'fat' => 18
+            'fat' => 18,
+            'color' => 'green'
         ]
     ];
     file_put_contents($mealsFile, json_encode($initialMeals, JSON_PRETTY_PRINT));
@@ -44,6 +46,7 @@ if (isset($_POST['add_meal'])) {
     $protein = floatval($_POST['protein']);
     $carbs = floatval($_POST['carbs']);
     $fat = floatval($_POST['fat']);
+    $color = $_POST['color'];
     
     // Validation
     $errors = [];
@@ -74,7 +77,8 @@ if (isset($_POST['add_meal'])) {
             'name' => $name,
             'protein' => $protein,
             'carbs' => $carbs,
-            'fat' => $fat
+            'fat' => $fat,
+            'color' => $color
         ];
         
         // Save the updated meals
@@ -99,6 +103,7 @@ if (isset($_POST['update_meal'])) {
     $protein = floatval($_POST['protein']);
     $carbs = floatval($_POST['carbs']);
     $fat = floatval($_POST['fat']);
+    $color = $_POST['color'];
     
     // Validation
     $errors = [];
@@ -133,7 +138,8 @@ if (isset($_POST['update_meal'])) {
                     'name' => $newName,
                     'protein' => $protein,
                     'carbs' => $carbs,
-                    'fat' => $fat
+                    'fat' => $fat,
+                    'color' => $color
                 ];
                 break;
             }
@@ -230,23 +236,34 @@ usort($meals, function($a, $b) {
                     
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label for="protein" class="block text-sm font-medium text-gray-700 mb-1">P (g)</label>
+                            <label for="protein" class="block text-sm font-medium text-gray-700 mb-1">P</label>
                             <input type="number" id="protein" name="protein" min="0" step="0.1" required value="0"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                         </div>
                         
                         <div>
-                            <label for="carbs" class="block text-sm font-medium text-gray-700 mb-1">C (g)</label>
+                            <label for="carbs" class="block text-sm font-medium text-gray-700 mb-1">C</label>
                             <input type="number" id="carbs" name="carbs" min="0" step="0.1" required value="0"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                         </div>
                         
                         <div>
-                            <label for="fat" class="block text-sm font-medium text-gray-700 mb-1">F (g)</label>
+                            <label for="fat" class="block text-sm font-medium text-gray-700 mb-1">F</label>
                             <input type="number" id="fat" name="fat" min="0" step="0.1" required value="0"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                         </div>
                     </div>
+                </div>
+                
+                <div>
+                    <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Button Color</label>
+                    <select id="color" name="color" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                        <option value="blue">Blue</option>
+                        <option value="brown">Brown</option>
+                        <option value="green">Dark Green</option>
+                        <option value="orange">Orange</option>
+                    </select>
                 </div>
                 
                 <div class="flex justify-between items-center pt-2">
@@ -273,9 +290,10 @@ usort($meals, function($a, $b) {
                             <tr class="bg-gray-100">
                                 <th class="border p-2 text-left">Meal Name</th>
                                 <th class="border p-2 text-center">K</th>
-                                <th class="border p-2 text-center">P (g)</th>
-                                <th class="border p-2 text-center">C (g)</th>
-                                <th class="border p-2 text-center">F (g)</th>
+                                <th class="border p-2 text-center">P</th>
+                                <th class="border p-2 text-center">C</th>
+                                <th class="border p-2 text-center">F</th>
+                                <th class="border p-2 text-center">Color</th>
                                 <th class="border p-2 text-center">Actions</th>
                             </tr>
                         </thead>
@@ -289,13 +307,17 @@ usort($meals, function($a, $b) {
                                     <td class="border p-2 text-center"><?php echo $meal['carbs']; ?></td>
                                     <td class="border p-2 text-center"><?php echo $meal['fat']; ?></td>
                                     <td class="border p-2 text-center">
+                                        <span class="inline-block w-6 h-6 rounded-full" style="background-color: <?php echo isset($meal['color']) ? $meal['color'] : 'blue'; ?>"></span>
+                                    </td>
+                                    <td class="border p-2 text-center">
                                         <div class="flex justify-center space-x-2">
                                             <button type="button" 
                                                 class="edit-meal-btn px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                                                 data-name="<?php echo htmlspecialchars($meal['name']); ?>"
                                                 data-protein="<?php echo $meal['protein']; ?>"
                                                 data-carbs="<?php echo $meal['carbs']; ?>"
-                                                data-fat="<?php echo $meal['fat']; ?>">
+                                                data-fat="<?php echo $meal['fat']; ?>"
+                                                data-color="<?php echo isset($meal['color']) ? $meal['color'] : 'blue'; ?>">
                                                 Edit
                                             </button>
                                             
@@ -331,22 +353,33 @@ usort($meals, function($a, $b) {
                     
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label for="edit-protein" class="block text-sm font-medium text-gray-700 mb-1">P (g)</label>
+                            <label for="edit-protein" class="block text-sm font-medium text-gray-700 mb-1">P</label>
                             <input type="number" id="edit-protein" name="protein" min="0" step="0.1" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                         </div>
                         
                         <div>
-                            <label for="edit-carbs" class="block text-sm font-medium text-gray-700 mb-1">C (g)</label>
+                            <label for="edit-carbs" class="block text-sm font-medium text-gray-700 mb-1">C</label>
                             <input type="number" id="edit-carbs" name="carbs" min="0" step="0.1" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                         </div>
                         
                         <div>
-                            <label for="edit-fat" class="block text-sm font-medium text-gray-700 mb-1">F (g)</label>
+                            <label for="edit-fat" class="block text-sm font-medium text-gray-700 mb-1">F</label>
                             <input type="number" id="edit-fat" name="fat" min="0" step="0.1" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                         </div>
+                    </div>
+                    
+                    <div>
+                        <label for="edit-color" class="block text-sm font-medium text-gray-700 mb-1">Button Color</label>
+                        <select id="edit-color" name="color" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                            <option value="blue">Blue</option>
+                            <option value="brown">Brown</option>
+                            <option value="green">Dark Green</option>
+                            <option value="orange">Orange</option>
+                        </select>
                     </div>
                     
                     <div class="flex justify-between items-center pt-2">
@@ -413,12 +446,14 @@ usort($meals, function($a, $b) {
                 const protein = $(this).data('protein');
                 const carbs = $(this).data('carbs');
                 const fat = $(this).data('fat');
+                const color = $(this).data('color');
                 
                 $('#edit-old-name').val(name);
                 $('#edit-name').val(name);
                 $('#edit-protein').val(protein);
                 $('#edit-carbs').val(carbs);
                 $('#edit-fat').val(fat);
+                $('#edit-color').val(color);
                 
                 updateEditEstimatedKcal();
                 

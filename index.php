@@ -15,37 +15,43 @@ if (!file_exists($mealsFile)) {
             'name' => 'Oatmeal',
             'protein' => 10,
             'carbs' => 50,
-            'fat' => 5
+            'fat' => 5,
+            'color' => 'blue'
         ],
         [
             'name' => 'Chicken Salad',
             'protein' => 30,
             'carbs' => 15,
-            'fat' => 18
+            'fat' => 18,
+            'color' => 'green'
         ],
         [
             'name' => 'Protein Shake',
             'protein' => 25,
             'carbs' => 10,
-            'fat' => 3
+            'fat' => 3,
+            'color' => 'blue'
         ],
         [
             'name' => 'Salmon with Rice',
             'protein' => 35,
             'carbs' => 40,
-            'fat' => 15
+            'fat' => 15,
+            'color' => 'orange'
         ],
         [
             'name' => 'Greek Yogurt',
             'protein' => 15,
             'carbs' => 8,
-            'fat' => 5
+            'fat' => 5,
+            'color' => 'blue'
         ],
         [
             'name' => 'Banana',
             'protein' => 1,
             'carbs' => 27,
-            'fat' => 0
+            'fat' => 0,
+            'color' => 'brown'
         ]
     ];
     file_put_contents($mealsFile, json_encode($initialMeals, JSON_PRETTY_PRINT));
@@ -94,7 +100,8 @@ if (isset($_POST['add_meal'])) {
             'name' => $mealToAdd['name'],
             'protein' => $mealToAdd['protein'],
             'carbs' => $mealToAdd['carbs'],
-            'fat' => $mealToAdd['fat']
+            'fat' => $mealToAdd['fat'],
+            'color' => isset($mealToAdd['color']) ? $mealToAdd['color'] : 'blue'
         ];
         
         // Save the updated daily meals
@@ -173,10 +180,10 @@ $displayDate = date('D d/m');
                     <thead>
                         <tr class="bg-blue-100">
                             <th class="border p-2 text-left">Meal</th>
-                            <th class="border p-2 text-center">KCAL</th>
-                            <th class="border p-2 text-center">Protein (g)</th>
-                            <th class="border p-2 text-center">Carbs (g)</th>
-                            <th class="border p-2 text-center">Fat (g)</th>
+                            <th class="border p-2 text-center">Kcal</th>
+                            <th class="border p-2 text-center">Protein</th>
+                            <th class="border p-2 text-center">Carbs</th>
+                            <th class="border p-2 text-center">Fat</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -219,7 +226,26 @@ $displayDate = date('D d/m');
                     <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                     <form method="post" class="meal-form">
                         <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
-                        <button type="submit" name="add_meal" class="meal-button h-full w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg text-center">
+                        <button type="submit" name="add_meal" 
+                            class="meal-button h-full w-full 
+                            <?php 
+                            $buttonColor = isset($meal['color']) ? $meal['color'] : 'blue';
+                            switch($buttonColor) {
+                                case 'brown':
+                                    echo 'bg-amber-800 hover:bg-amber-900';
+                                    break;
+                                case 'green':
+                                    echo 'bg-green-800 hover:bg-green-900';
+                                    break;
+                                case 'orange':
+                                    echo 'bg-orange-600 hover:bg-orange-700';
+                                    break;
+                                case 'blue':
+                                default:
+                                    echo 'bg-blue-600 hover:bg-blue-700';
+                                    break;
+                            }
+                            ?> text-white font-medium py-3 px-4 rounded-lg text-center">
                             <div class="font-bold"><?php echo htmlspecialchars($meal['name']); ?></div>
                             <div class="text-sm mt-1">
                                 <?php echo $mealKcal; ?> kcal | 
