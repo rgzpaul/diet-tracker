@@ -219,7 +219,7 @@ $displayDate = date('D d/m');
                     <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                     <form method="post" class="meal-form">
                         <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
-                        <button type="submit" name="add_meal" class="meal-button w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg text-center">
+                        <button type="submit" name="add_meal" class="meal-button h-full w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg text-center">
                             <div class="font-bold"><?php echo htmlspecialchars($meal['name']); ?></div>
                             <div class="text-sm mt-1">
                                 <?php echo $mealKcal; ?> kcal | 
