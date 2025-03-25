@@ -1,0 +1,15 @@
+{
+    "name": "Diet",
+    "short_name": "Diet",
+    "description": "A dieting management app",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#3A6D8C",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "100x100",
+            "type": "image/png"
+        }
+    ]
+}
