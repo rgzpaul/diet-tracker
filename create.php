@@ -212,7 +212,7 @@ usort($meals, function($a, $b) {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-center mb-8 text-purple-700">Manage Meals</h1>
         
         <!-- Message Display -->

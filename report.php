@@ -117,7 +117,7 @@ if ($weeklySummary['daysTracked'] > 0) {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-center mb-2 text-green-700">Weekly Meal Report</h1>
         <p class="text-center mb-4 text-gray-600"><?php echo $weekStartDisplay; ?> - <?php echo $weekEndDisplay; ?></p>
         
