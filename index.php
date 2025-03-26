@@ -168,7 +168,7 @@ $displayDate = date('D d/m');
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Daily Meal Tracker</h1>
         
         <!-- Today's Meals Table -->
