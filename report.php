@@ -182,9 +182,9 @@ if ($weeklySummary['daysTracked'] > 0) {
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Total Weekly Macros</div>
                     <div class="text-lg">
-                        Protein: <span class="font-semibold"><?php echo $weeklySummary['totalProtein']; ?> g</span> | 
-                        Carbs: <span class="font-semibold"><?php echo $weeklySummary['totalCarbs']; ?> g</span> | 
-                        Fat: <span class="font-semibold"><?php echo $weeklySummary['totalFat']; ?> g</span>
+                        P: <span class="font-semibold"><?php echo $weeklySummary['totalProtein']; ?> g</span> | 
+                        C: <span class="font-semibold"><?php echo $weeklySummary['totalCarbs']; ?> g</span> | 
+                        F: <span class="font-semibold"><?php echo $weeklySummary['totalFat']; ?> g</span>
                     </div>
                 </div>
             </div>
@@ -200,9 +200,9 @@ if ($weeklySummary['daysTracked'] > 0) {
                         <tr class="bg-gray-100">
                             <th class="border p-2 text-left">Day</th>
                             <th class="border p-2 text-center">K</th>
-                            <th class="border p-2 text-center">P (g)</th>
-                            <th class="border p-2 text-center">C (g)</th>
-                            <th class="border p-2 text-center">F (g)</th>
+                            <th class="border p-2 text-center">P</th>
+                            <th class="border p-2 text-center">C</th>
+                            <th class="border p-2 text-center">F</th>
                         </tr>
                     </thead>
                     <tbody>

@@ -180,10 +180,10 @@ $displayDate = date('D d/m');
                     <thead>
                         <tr class="bg-blue-100">
                             <th class="border p-2 text-left">Meal</th>
-                            <th class="border p-2 text-center">Kcal</th>
-                            <th class="border p-2 text-center">Protein</th>
-                            <th class="border p-2 text-center">Carbs</th>
-                            <th class="border p-2 text-center">Fat</th>
+                            <th class="border p-2 text-center">K</th>
+                            <th class="border p-2 text-center">P</th>
+                            <th class="border p-2 text-center">C</th>
+                            <th class="border p-2 text-center">F</th>
                         </tr>
                     </thead>
                     <tbody>
