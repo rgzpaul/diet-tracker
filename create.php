@@ -473,5 +473,6 @@ usort($meals, function($a, $b) {
             });
         });
     </script>
+    <script src="sort.js"></script>
 </body>
 </html>

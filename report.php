@@ -293,5 +293,6 @@ if ($weeklySummary['daysTracked'] > 0) {
             });
         });
     </script>
+    <script src="sort.js"></script>
 </body>
 </html>

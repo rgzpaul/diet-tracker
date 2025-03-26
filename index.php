@@ -293,5 +293,6 @@ $displayDate = date('D d/m');
             });
         });
     </script>
+    <script src="sort.js"></script>
 </body>
 </html>
