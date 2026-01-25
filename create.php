@@ -406,9 +406,9 @@ usort($meals, function ($a, $b) {
                                     <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['carbs']; ?></td>
                                     <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['fat']; ?></td>
                                     <td class="py-3 px-1 text-center border-l border-stone-100">
-                                        <div class="flex justify-center gap-1">
+                                        <div class="flex max-xs:flex-col itens-center justify-center gap-1">
                                             <button type="button"
-                                                class="edit-meal-btn p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                                                class="edit-meal-btn p-2 flex justify-center text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                                                 data-name="<?php echo htmlspecialchars($meal['name']); ?>"
                                                 data-protein="<?php echo $meal['protein']; ?>"
                                                 data-carbs="<?php echo $meal['carbs']; ?>"
@@ -754,9 +754,9 @@ usort($meals, function ($a, $b) {
                         <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${meal.carbs}</td>
                         <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${meal.fat}</td>
                         <td class="py-3 px-1 text-center border-l border-stone-100">
-                            <div class="flex justify-center gap-1">
+                            <div class="flex max-xs:flex-col itens-center justify-center gap-1">
                                 <button type="button"
-                                    class="edit-meal-btn p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                                    class="edit-meal-btn p-2 flex justify-center text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                                     data-name="${escapeHtml(meal.name)}"
                                     data-protein="${meal.protein}"
                                     data-carbs="${meal.carbs}"
