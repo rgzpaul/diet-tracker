@@ -323,34 +323,43 @@ $displayDate = date('D d/m');
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <?php foreach ($meals as $meal): ?>
                     <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
-                    <form method="post" class="meal-form">
-                        <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
-                        <button type="submit" name="add_meal"
-                            class="meal-button h-full w-full
-                            <?php
-                            $buttonColor = isset($meal['color']) ? $meal['color'] : 'grey';
-                            switch ($buttonColor) {
-                                case 'brown':
-                                    echo 'bg-stone-600 hover:bg-stone-700';
-                                    break;
-                                case 'green':
-                                    echo 'bg-stone-700 hover:bg-stone-800';
-                                    break;
-                                case 'orange':
-                                    echo 'bg-stone-500 hover:bg-stone-600';
-                                    break;
-                                case 'blue':
-                                default:
-                                    echo 'bg-stone-800 hover:bg-stone-900';
-                                    break;
-                            }
-                            ?> text-white py-3 px-3 rounded-lg text-left">
-                            <div class="font-medium text-sm"><?php echo htmlspecialchars($meal['name']); ?></div>
-                            <div class="text-xs mt-1 opacity-80">
-                                <?php echo $mealKcal; ?> kcal
-                            </div>
+                    <div class="relative">
+                        <form method="post" class="meal-form h-full">
+                            <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
+                            <button type="submit" name="add_meal"
+                                class="meal-button h-full w-full
+                                <?php
+                                $buttonColor = isset($meal['color']) ? $meal['color'] : 'grey';
+                                switch ($buttonColor) {
+                                    case 'brown':
+                                        echo 'bg-stone-600 hover:bg-stone-700';
+                                        break;
+                                    case 'green':
+                                        echo 'bg-stone-700 hover:bg-stone-800';
+                                        break;
+                                    case 'orange':
+                                        echo 'bg-stone-500 hover:bg-stone-600';
+                                        break;
+                                    case 'blue':
+                                    default:
+                                        echo 'bg-stone-800 hover:bg-stone-900';
+                                        break;
+                                }
+                                ?> text-white py-3 px-3 rounded-lg text-left pr-8">
+                                <div class="font-medium text-sm"><?php echo htmlspecialchars($meal['name']); ?></div>
+                                <div class="text-xs mt-1 opacity-80">
+                                    <?php echo $mealKcal; ?> kcal
+                                </div>
+                            </button>
+                        </form>
+                        <button type="button"
+                            class="info-btn absolute top-2 right-2 p-1 text-white/70 hover:text-white hover:bg-white/20 rounded transition-colors"
+                            data-name="<?php echo htmlspecialchars($meal['name']); ?>"
+                            data-description="<?php echo htmlspecialchars(isset($meal['description']) ? $meal['description'] : ''); ?>"
+                            title="View description">
+                            <i data-lucide="info" class="w-4 h-4"></i>
                         </button>
-                    </form>
+                    </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -365,6 +374,24 @@ $displayDate = date('D d/m');
                 <i data-lucide="settings" class="w-4 h-4"></i>
                 Manage
             </a>
+        </div>
+    </div>
+
+    <!-- Description Modal -->
+    <div id="description-modal" class="fixed inset-0 bg-stone-900/50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl border border-stone-200 p-6 w-full max-w-md mx-4">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="info" class="w-5 h-5 text-stone-500"></i>
+                <h3 id="description-modal-title" class="text-lg font-medium text-stone-700">Meal Description</h3>
+            </div>
+            <div id="description-modal-content" class="text-stone-600 mb-4 whitespace-pre-wrap">
+                No description available.
+            </div>
+            <div class="flex justify-end">
+                <button type="button" id="close-description-modal" class="px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 transition-colors">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 
@@ -505,6 +532,30 @@ $displayDate = date('D d/m');
                 div.textContent = text;
                 return div.innerHTML;
             }
+
+            // Info button click (show description)
+            $('.info-btn').on('click', function(e) {
+                e.stopPropagation();
+                const name = $(this).data('name');
+                const description = $(this).data('description') || '';
+
+                $('#description-modal-title').text(name);
+                $('#description-modal-content').text(description || 'No description available.');
+                $('#description-modal').removeClass('hidden');
+                lucide.createIcons();
+            });
+
+            // Close description modal
+            $('#close-description-modal').on('click', function() {
+                $('#description-modal').addClass('hidden');
+            });
+
+            // Close modal when clicking outside
+            $('#description-modal').on('click', function(e) {
+                if (e.target === this) {
+                    $(this).addClass('hidden');
+                }
+            });
         });
     </script>
     <script src="sort.js"></script>

@@ -77,12 +77,14 @@ if (isset($_POST['add_meal'])) {
 
     if (empty($errors)) {
         // Add the new meal
+        $description = isset($_POST['description']) ? trim($_POST['description']) : '';
         $newMeal = [
             'name' => $name,
             'protein' => $protein,
             'carbs' => $carbs,
             'fat' => $fat,
-            'color' => $color
+            'color' => $color,
+            'description' => $description
         ];
         $meals[] = $newMeal;
 
@@ -156,6 +158,7 @@ if (isset($_POST['update_meal'])) {
 
     if (empty($errors)) {
         // Update the meal
+        $description = isset($_POST['description']) ? trim($_POST['description']) : '';
         $updatedMeal = null;
         foreach ($meals as $key => $meal) {
             if ($meal['name'] === $oldName) {
@@ -164,7 +167,8 @@ if (isset($_POST['update_meal'])) {
                     'protein' => $protein,
                     'carbs' => $carbs,
                     'fat' => $fat,
-                    'color' => $color
+                    'color' => $color,
+                    'description' => $description
                 ];
                 $updatedMeal = $meals[$key];
                 break;
@@ -337,6 +341,13 @@ usort($meals, function ($a, $b) {
                     </select>
                 </div>
 
+                <div>
+                    <label for="description" class="block text-sm font-medium text-stone-600 mb-1.5">Description (optional)</label>
+                    <textarea id="description" name="description" rows="2"
+                        class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all resize-none"
+                        placeholder="Add notes about ingredients, preparation, etc."></textarea>
+                </div>
+
                 <div class="flex justify-between items-center pt-2">
                     <div class="text-sm text-stone-500 flex items-center gap-2">
                         <i data-lucide="flame" class="w-4 h-4"></i>
@@ -379,7 +390,18 @@ usort($meals, function ($a, $b) {
                             <?php foreach ($meals as $meal): ?>
                                 <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
-                                    <td class="py-3 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
+                                    <td class="py-3 text-stone-700">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span><?php echo htmlspecialchars($meal['name']); ?></span>
+                                            <button type="button"
+                                                class="info-btn p-1 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded transition-colors flex-shrink-0"
+                                                data-name="<?php echo htmlspecialchars($meal['name']); ?>"
+                                                data-description="<?php echo htmlspecialchars(isset($meal['description']) ? $meal['description'] : ''); ?>"
+                                                title="View description">
+                                                <i data-lucide="info" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                     <td class="py-3 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
                                     <td class="py-3 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['protein']; ?></td>
                                     <td class="py-3 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['carbs']; ?></td>
@@ -392,7 +414,8 @@ usort($meals, function ($a, $b) {
                                                 data-protein="<?php echo $meal['protein']; ?>"
                                                 data-carbs="<?php echo $meal['carbs']; ?>"
                                                 data-fat="<?php echo $meal['fat']; ?>"
-                                                data-color="<?php echo isset($meal['color']) ? $meal['color'] : 'blue'; ?>">
+                                                data-color="<?php echo isset($meal['color']) ? $meal['color'] : 'blue'; ?>"
+                                                data-description="<?php echo htmlspecialchars(isset($meal['description']) ? $meal['description'] : ''); ?>">
                                                 <i data-lucide="pencil" class="w-4 h-4"></i>
                                             </button>
 
@@ -460,6 +483,13 @@ usort($meals, function ($a, $b) {
                         </select>
                     </div>
 
+                    <div>
+                        <label for="edit-description" class="block text-sm font-medium text-stone-600 mb-1.5">Description</label>
+                        <textarea id="edit-description" name="description" rows="2"
+                            class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all resize-none"
+                            placeholder="Add notes about ingredients, preparation, etc."></textarea>
+                    </div>
+
                     <div class="text-sm text-stone-500 flex items-center gap-2">
                         <i data-lucide="flame" class="w-4 h-4"></i>
                         <span id="edit-estimated-kcal">0</span> kcal
@@ -475,6 +505,24 @@ usort($meals, function ($a, $b) {
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Description Modal -->
+        <div id="description-modal" class="fixed inset-0 bg-stone-900/50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-xl border border-stone-200 p-6 w-full max-w-md mx-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <i data-lucide="info" class="w-5 h-5 text-stone-500"></i>
+                    <h3 id="description-modal-title" class="text-lg font-medium text-stone-700">Meal Description</h3>
+                </div>
+                <div id="description-modal-content" class="text-stone-600 mb-4 whitespace-pre-wrap">
+                    No description available.
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="close-description-modal" class="px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 transition-colors">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -637,7 +685,7 @@ usort($meals, function ($a, $b) {
                             const $row = $(`.edit-meal-btn[data-name="${escapeHtml(response.oldName)}"]`).closest('tr');
 
                             // Update row content
-                            $row.find('td:eq(0)').text(response.meal.name);
+                            $row.find('td:eq(0) span').first().text(response.meal.name);
                             $row.find('td:eq(1)').text(response.kcal);
                             $row.find('td:eq(2)').text(response.meal.protein);
                             $row.find('td:eq(3)').text(response.meal.carbs);
@@ -645,16 +693,26 @@ usort($meals, function ($a, $b) {
 
                             // Update button data attributes
                             const $editBtn = $row.find('.edit-meal-btn');
+                            const description = response.meal.description || '';
                             $editBtn.data('name', response.meal.name);
                             $editBtn.data('protein', response.meal.protein);
                             $editBtn.data('carbs', response.meal.carbs);
                             $editBtn.data('fat', response.meal.fat);
                             $editBtn.data('color', response.meal.color);
+                            $editBtn.data('description', description);
                             $editBtn.attr('data-name', response.meal.name);
                             $editBtn.attr('data-protein', response.meal.protein);
                             $editBtn.attr('data-carbs', response.meal.carbs);
                             $editBtn.attr('data-fat', response.meal.fat);
                             $editBtn.attr('data-color', response.meal.color);
+                            $editBtn.attr('data-description', description);
+
+                            // Update info button data attributes
+                            const $infoBtn = $row.find('.info-btn');
+                            $infoBtn.data('name', response.meal.name);
+                            $infoBtn.data('description', description);
+                            $infoBtn.attr('data-name', response.meal.name);
+                            $infoBtn.attr('data-description', description);
 
                             // Update delete form hidden input
                             $row.find('.delete-form input[name="meal_name"]').val(response.meal.name);
@@ -677,9 +735,21 @@ usort($meals, function ($a, $b) {
 
             // Function to create a new meal row
             function createMealRow(meal, kcal) {
+                const description = meal.description || '';
                 return `
                     <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
-                        <td class="py-3 text-stone-700">${escapeHtml(meal.name)}</td>
+                        <td class="py-3 text-stone-700">
+                            <div class="flex items-center justify-between gap-2">
+                                <span>${escapeHtml(meal.name)}</span>
+                                <button type="button"
+                                    class="info-btn p-1 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded transition-colors flex-shrink-0"
+                                    data-name="${escapeHtml(meal.name)}"
+                                    data-description="${escapeHtml(description)}"
+                                    title="View description">
+                                    <i data-lucide="info" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </td>
                         <td class="py-3 text-center text-stone-600 font-medium border-l border-stone-100">${kcal}</td>
                         <td class="py-3 text-center text-stone-500 border-l border-stone-100">${meal.protein}</td>
                         <td class="py-3 text-center text-stone-500 border-l border-stone-100">${meal.carbs}</td>
@@ -692,7 +762,8 @@ usort($meals, function ($a, $b) {
                                     data-protein="${meal.protein}"
                                     data-carbs="${meal.carbs}"
                                     data-fat="${meal.fat}"
-                                    data-color="${meal.color}">
+                                    data-color="${meal.color}"
+                                    data-description="${escapeHtml(description)}">
                                     <i data-lucide="pencil" class="w-4 h-4"></i>
                                 </button>
                                 <form method="post" class="delete-form inline">
@@ -716,6 +787,7 @@ usort($meals, function ($a, $b) {
                     const carbs = $(this).data('carbs');
                     const fat = $(this).data('fat');
                     const color = $(this).data('color');
+                    const description = $(this).data('description') || '';
 
                     $('#edit-old-name').val(name);
                     $('#edit-name').val(name);
@@ -723,10 +795,22 @@ usort($meals, function ($a, $b) {
                     $('#edit-carbs').val(carbs);
                     $('#edit-fat').val(fat);
                     $('#edit-color').val(color);
+                    $('#edit-description').val(description);
 
                     updateEditEstimatedKcal();
 
                     $('#edit-modal').removeClass('hidden');
+                    lucide.createIcons();
+                });
+
+                // Info button click (show description)
+                $('.info-btn').off('click').on('click', function() {
+                    const name = $(this).data('name');
+                    const description = $(this).data('description') || '';
+
+                    $('#description-modal-title').text(name);
+                    $('#description-modal-content').text(description || 'No description available.');
+                    $('#description-modal').removeClass('hidden');
                     lucide.createIcons();
                 });
 
@@ -790,8 +874,13 @@ usort($meals, function ($a, $b) {
                 $('#edit-modal').addClass('hidden');
             });
 
+            // Close description modal
+            $('#close-description-modal').on('click', function() {
+                $('#description-modal').addClass('hidden');
+            });
+
             // Close modal when clicking outside
-            $('#edit-modal').on('click', function(e) {
+            $('#edit-modal, #description-modal').on('click', function(e) {
                 if (e.target === this) {
                     $(this).addClass('hidden');
                 }
