@@ -4,7 +4,7 @@
     "description": "A dieting management app",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#3A6D8C",
+    "theme_color": "#57534E",
     "icons": [
         {
             "src": "icon.png",
