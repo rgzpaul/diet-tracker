@@ -418,7 +418,7 @@ usort($meals, function ($a, $b) {
                                                 <i data-lucide="pencil" class="w-4 h-4"></i>
                                             </button>
 
-                                            <form method="post" class="delete-form inline" onsubmit="return confirm('Are you sure you want to delete this meal?');">
+                                            <form method="post" class="delete-form inline" onsubmit="return confirm('Are you sure you want to delete <?php echo htmlspecialchars($meal['name']); ?>?');">
                                                 <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
                                                 <button type="submit" name="delete_meal" class="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                                     <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -817,13 +817,14 @@ usort($meals, function ($a, $b) {
                 $('.delete-form').off('submit').on('submit', function(e) {
                     e.preventDefault();
 
-                    if (!confirm('Are you sure you want to delete this meal?')) {
+                    const $form = $(this);
+                    const mealName = $form.find('input[name="meal_name"]').val();
+
+                    if (!confirm('Are you sure you want to delete ' + mealName + '?')) {
                         return;
                     }
 
-                    const $form = $(this);
                     const $row = $form.closest('tr');
-                    const mealName = $form.find('input[name="meal_name"]').val();
 
                     $.ajax({
                         url: 'create.php',
