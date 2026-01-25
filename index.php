@@ -280,9 +280,6 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                     <h2 class="text-lg font-medium text-stone-700"><?php echo strtoupper($displayDate); ?></h2>
                     <i data-lucide="chevron-down" class="w-4 h-4 text-stone-400"></i>
                 </div>
-                <?php if (!$isToday): ?>
-                    <a href="index.php" class="ml-auto text-sm text-blue-600 hover:text-blue-700 font-medium">Today</a>
-                <?php endif; ?>
             </div>
 
             <div class="overflow-x-auto">
