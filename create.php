@@ -335,7 +335,6 @@ usort($meals, function ($a, $b) {
                     <select id="color" name="color"
                         class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         <option value="blue">Protein-rich</option>
-                        <option value="green">Vegetables</option>
                         <option value="brown">Snacks</option>
                         <option value="orange">Mixed</option>
                     </select>

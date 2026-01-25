@@ -332,17 +332,14 @@ $displayDate = date('D d/m');
                                 $buttonColor = isset($meal['color']) ? $meal['color'] : 'grey';
                                 switch ($buttonColor) {
                                     case 'brown':
-                                        echo 'bg-stone-600 hover:bg-stone-700';
-                                        break;
-                                    case 'green':
-                                        echo 'bg-stone-700 hover:bg-stone-800';
+                                        echo 'bg-amber-700 hover:bg-amber-800';
                                         break;
                                     case 'orange':
-                                        echo 'bg-stone-500 hover:bg-stone-600';
+                                        echo 'bg-orange-500 hover:bg-orange-600';
                                         break;
                                     case 'blue':
                                     default:
-                                        echo 'bg-stone-800 hover:bg-stone-900';
+                                        echo 'bg-blue-600 hover:bg-blue-700';
                                         break;
                                 }
                                 ?> text-white py-3 px-3 rounded-lg text-left pr-8">
