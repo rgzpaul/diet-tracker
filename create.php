@@ -37,6 +37,9 @@ function calculateKcal($protein, $carbs, $fat)
     return ($protein * 4) + ($carbs * 4) + ($fat * 9);
 }
 
+// Check if this is an AJAX request
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
 // Handle form submissions
 $message = '';
 $messageType = '';
@@ -74,16 +77,28 @@ if (isset($_POST['add_meal'])) {
 
     if (empty($errors)) {
         // Add the new meal
-        $meals[] = [
+        $newMeal = [
             'name' => $name,
             'protein' => $protein,
             'carbs' => $carbs,
             'fat' => $fat,
             'color' => $color
         ];
+        $meals[] = $newMeal;
 
         // Save the updated meals
         file_put_contents($mealsFile, json_encode($meals, JSON_PRETTY_PRINT));
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'message' => 'Meal added successfully!',
+                'meal' => $newMeal,
+                'kcal' => calculateKcal($protein, $carbs, $fat)
+            ]);
+            exit;
+        }
 
         $message = "Meal added successfully!";
         $messageType = "success";
@@ -92,6 +107,14 @@ if (isset($_POST['add_meal'])) {
         header("Location: " . $_SERVER['PHP_SELF'] . "?message=" . urlencode($message) . "&type=" . $messageType);
         exit;
     } else {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'errors' => $errors
+            ]);
+            exit;
+        }
         $message = implode("<br>", $errors);
         $messageType = "error";
     }
@@ -133,6 +156,7 @@ if (isset($_POST['update_meal'])) {
 
     if (empty($errors)) {
         // Update the meal
+        $updatedMeal = null;
         foreach ($meals as $key => $meal) {
             if ($meal['name'] === $oldName) {
                 $meals[$key] = [
@@ -142,12 +166,25 @@ if (isset($_POST['update_meal'])) {
                     'fat' => $fat,
                     'color' => $color
                 ];
+                $updatedMeal = $meals[$key];
                 break;
             }
         }
 
         // Save the updated meals
         file_put_contents($mealsFile, json_encode($meals, JSON_PRETTY_PRINT));
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'message' => 'Meal updated successfully!',
+                'meal' => $updatedMeal,
+                'oldName' => $oldName,
+                'kcal' => calculateKcal($protein, $carbs, $fat)
+            ]);
+            exit;
+        }
 
         $message = "Meal updated successfully!";
         $messageType = "success";
@@ -156,6 +193,14 @@ if (isset($_POST['update_meal'])) {
         header("Location: " . $_SERVER['PHP_SELF'] . "?message=" . urlencode($message) . "&type=" . $messageType);
         exit;
     } else {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'errors' => $errors
+            ]);
+            exit;
+        }
         $message = implode("<br>", $errors);
         $messageType = "error";
     }
@@ -178,6 +223,17 @@ if (isset($_POST['delete_meal'])) {
 
     // Save the updated meals
     file_put_contents($mealsFile, json_encode($meals, JSON_PRETTY_PRINT));
+
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'message' => 'Meal deleted successfully!',
+            'deletedName' => $name,
+            'mealsCount' => count($meals)
+        ]);
+        exit;
+    }
 
     $message = "Meal deleted successfully!";
     $messageType = "success";
@@ -241,7 +297,7 @@ usort($meals, function ($a, $b) {
                 <h2 class="text-lg font-medium text-stone-700">Add New Meal</h2>
             </div>
 
-            <form method="post" class="space-y-4">
+            <form method="post" id="add-meal-form" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="name" class="block text-sm font-medium text-stone-600 mb-1.5">Meal Name</label>
@@ -308,7 +364,7 @@ usort($meals, function ($a, $b) {
                 </div>
             <?php else: ?>
                 <div class="overflow-x-auto">
-                    <table class="w-full">
+                    <table class="w-full meals-table">
                         <thead>
                             <tr class="border-b border-stone-200">
                                 <th class="pb-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
@@ -364,7 +420,7 @@ usort($meals, function ($a, $b) {
                     <h3 class="text-lg font-medium text-stone-700">Edit Meal</h3>
                 </div>
 
-                <form method="post" class="space-y-4">
+                <form method="post" id="edit-meal-form" class="space-y-4">
                     <input type="hidden" id="edit-old-name" name="old_name">
 
                     <div>
@@ -462,32 +518,272 @@ usort($meals, function ($a, $b) {
 
             // Update KCAL preview on input change
             $('#protein, #carbs, #fat').on('input', updateEstimatedKcal);
+            '#edit-protein, #edit-carbs, #edit-fat'.split(', ').forEach(function(sel) {
+                $(sel).on('input', updateEditEstimatedKcal);
+            });
             $('#edit-protein, #edit-carbs, #edit-fat').on('input', updateEditEstimatedKcal);
 
             // Initialize KCAL preview
             updateEstimatedKcal();
 
-            // Edit meal button click
-            $('.edit-meal-btn').on('click', function() {
-                const name = $(this).data('name');
-                const protein = $(this).data('protein');
-                const carbs = $(this).data('carbs');
-                const fat = $(this).data('fat');
-                const color = $(this).data('color');
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
 
-                $('#edit-old-name').val(name);
-                $('#edit-name').val(name);
-                $('#edit-protein').val(protein);
-                $('#edit-carbs').val(carbs);
-                $('#edit-fat').val(fat);
-                $('#edit-color').val(color);
+            // Function to show toast message
+            function showToast(message, type) {
+                // Remove existing toast
+                $('.toast-message').remove();
 
-                updateEditEstimatedKcal();
+                const bgColor = type === 'success' ? 'bg-stone-200 text-stone-700' : 'bg-red-50 text-red-700';
+                const icon = type === 'success' ? 'check-circle' : 'alert-circle';
 
-                $('#edit-modal').removeClass('hidden');
-                // Re-initialize icons for modal
+                const toast = $(`
+                    <div class="toast-message fixed top-4 right-4 p-4 rounded-lg flex items-center gap-3 ${bgColor} shadow-lg z-50" style="opacity: 0;">
+                        <i data-lucide="${icon}" class="w-5 h-5 flex-shrink-0"></i>
+                        <span>${escapeHtml(message)}</span>
+                    </div>
+                `);
+
+                $('body').append(toast);
                 lucide.createIcons();
+                toast.animate({opacity: 1}, 200);
+
+                setTimeout(function() {
+                    toast.animate({opacity: 0}, 200, function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+
+            // AJAX handler for adding new meal
+            $('#add-meal-form').on('submit', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $button = $form.find('button[name="add_meal"]');
+
+                $button.addClass('opacity-50').prop('disabled', true);
+
+                $.ajax({
+                    url: 'create.php',
+                    method: 'POST',
+                    data: $form.serialize() + '&add_meal=1',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Add new row to table
+                            const $tbody = $('.meals-table tbody');
+                            const $emptyMessage = $tbody.find('.empty-message');
+                            if ($emptyMessage.length) {
+                                $emptyMessage.closest('tr').remove();
+                            }
+
+                            const newRow = createMealRow(response.meal, response.kcal);
+
+                            // Insert in alphabetical order
+                            let inserted = false;
+                            $tbody.find('tr').each(function() {
+                                const rowName = $(this).find('td:first').text();
+                                if (response.meal.name.toLowerCase() < rowName.toLowerCase()) {
+                                    $(newRow).insertBefore(this);
+                                    inserted = true;
+                                    return false;
+                                }
+                            });
+                            if (!inserted) {
+                                $tbody.append(newRow);
+                            }
+
+                            // Reinitialize icons and events
+                            lucide.createIcons();
+                            bindMealEvents();
+
+                            // Clear form
+                            $form[0].reset();
+                            updateEstimatedKcal();
+
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.errors.join(', '), 'error');
+                        }
+                        $button.removeClass('opacity-50').prop('disabled', false);
+                    },
+                    error: function() {
+                        showToast('Error adding meal. Please try again.', 'error');
+                        $button.removeClass('opacity-50').prop('disabled', false);
+                    }
+                });
             });
+
+            // AJAX handler for updating meal
+            $('#edit-meal-form').on('submit', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $button = $form.find('button[name="update_meal"]');
+
+                $button.addClass('opacity-50').prop('disabled', true);
+
+                $.ajax({
+                    url: 'create.php',
+                    method: 'POST',
+                    data: $form.serialize() + '&update_meal=1',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Find and update the row
+                            const $row = $(`.edit-meal-btn[data-name="${escapeHtml(response.oldName)}"]`).closest('tr');
+
+                            // Update row content
+                            $row.find('td:eq(0)').text(response.meal.name);
+                            $row.find('td:eq(1)').text(response.kcal);
+                            $row.find('td:eq(2)').text(response.meal.protein);
+                            $row.find('td:eq(3)').text(response.meal.carbs);
+                            $row.find('td:eq(4)').text(response.meal.fat);
+
+                            // Update button data attributes
+                            const $editBtn = $row.find('.edit-meal-btn');
+                            $editBtn.data('name', response.meal.name);
+                            $editBtn.data('protein', response.meal.protein);
+                            $editBtn.data('carbs', response.meal.carbs);
+                            $editBtn.data('fat', response.meal.fat);
+                            $editBtn.data('color', response.meal.color);
+                            $editBtn.attr('data-name', response.meal.name);
+                            $editBtn.attr('data-protein', response.meal.protein);
+                            $editBtn.attr('data-carbs', response.meal.carbs);
+                            $editBtn.attr('data-fat', response.meal.fat);
+                            $editBtn.attr('data-color', response.meal.color);
+
+                            // Update delete form hidden input
+                            $row.find('.delete-form input[name="meal_name"]').val(response.meal.name);
+
+                            // Close modal
+                            $('#edit-modal').addClass('hidden');
+
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.errors.join(', '), 'error');
+                        }
+                        $button.removeClass('opacity-50').prop('disabled', false);
+                    },
+                    error: function() {
+                        showToast('Error updating meal. Please try again.', 'error');
+                        $button.removeClass('opacity-50').prop('disabled', false);
+                    }
+                });
+            });
+
+            // Function to create a new meal row
+            function createMealRow(meal, kcal) {
+                return `
+                    <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
+                        <td class="py-3 text-stone-700">${escapeHtml(meal.name)}</td>
+                        <td class="py-3 text-center text-stone-600 font-medium">${kcal}</td>
+                        <td class="py-3 text-center text-stone-500">${meal.protein}</td>
+                        <td class="py-3 text-center text-stone-500">${meal.carbs}</td>
+                        <td class="py-3 text-center text-stone-500">${meal.fat}</td>
+                        <td class="py-3 text-center">
+                            <div class="flex justify-center gap-1">
+                                <button type="button"
+                                    class="edit-meal-btn p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                                    data-name="${escapeHtml(meal.name)}"
+                                    data-protein="${meal.protein}"
+                                    data-carbs="${meal.carbs}"
+                                    data-fat="${meal.fat}"
+                                    data-color="${meal.color}">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <form method="post" class="delete-form inline">
+                                    <input type="hidden" name="meal_name" value="${escapeHtml(meal.name)}">
+                                    <button type="submit" name="delete_meal" class="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // Function to bind meal events (edit and delete)
+            function bindMealEvents() {
+                // Edit meal button click
+                $('.edit-meal-btn').off('click').on('click', function() {
+                    const name = $(this).data('name');
+                    const protein = $(this).data('protein');
+                    const carbs = $(this).data('carbs');
+                    const fat = $(this).data('fat');
+                    const color = $(this).data('color');
+
+                    $('#edit-old-name').val(name);
+                    $('#edit-name').val(name);
+                    $('#edit-protein').val(protein);
+                    $('#edit-carbs').val(carbs);
+                    $('#edit-fat').val(fat);
+                    $('#edit-color').val(color);
+
+                    updateEditEstimatedKcal();
+
+                    $('#edit-modal').removeClass('hidden');
+                    lucide.createIcons();
+                });
+
+                // AJAX handler for deleting meal
+                $('.delete-form').off('submit').on('submit', function(e) {
+                    e.preventDefault();
+
+                    if (!confirm('Are you sure you want to delete this meal?')) {
+                        return;
+                    }
+
+                    const $form = $(this);
+                    const $row = $form.closest('tr');
+                    const mealName = $form.find('input[name="meal_name"]').val();
+
+                    $.ajax({
+                        url: 'create.php',
+                        method: 'POST',
+                        data: {
+                            delete_meal: 1,
+                            meal_name: mealName
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success) {
+                                $row.animate({opacity: 0}, 200, function() {
+                                    $(this).remove();
+
+                                    // Show empty message if no meals left
+                                    if (response.mealsCount === 0) {
+                                        const emptyRow = `
+                                            <tr>
+                                                <td colspan="6" class="py-8 text-center text-stone-400 empty-message">
+                                                    <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+                                                    <p>No meals have been added yet</p>
+                                                </td>
+                                            </tr>
+                                        `;
+                                        $('.meals-table tbody').html(emptyRow);
+                                        lucide.createIcons();
+                                    }
+                                });
+
+                                showToast(response.message, 'success');
+                            } else {
+                                showToast('Error deleting meal', 'error');
+                            }
+                        },
+                        error: function() {
+                            showToast('Error deleting meal. Please try again.', 'error');
+                        }
+                    });
+                });
+            }
+
+            // Initial binding
+            bindMealEvents();
 
             // Close modal
             $('#close-modal').on('click', function() {

@@ -2,7 +2,15 @@
 // Load the daily meals database
 $dailyMealsFile = 'data/daily_meals.json';
 
+// Check if this is an AJAX request
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
 if (!file_exists($dailyMealsFile)) {
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'No data available']);
+        exit;
+    }
     echo "No data available. Please add some meals first.";
     exit;
 }
@@ -106,6 +114,27 @@ if ($weeklySummary['daysTracked'] > 0) {
     $weeklySummary['avgCarbs'] = round($weeklySummary['totalCarbs'] / $weeklySummary['daysTracked'], 1);
     $weeklySummary['avgFat'] = round($weeklySummary['totalFat'] / $weeklySummary['daysTracked'], 1);
 }
+
+// Return JSON for AJAX requests
+if ($isAjax) {
+    // Add kcal to each meal in weekDays
+    foreach ($weekDays as &$day) {
+        foreach ($day['meals'] as &$meal) {
+            $meal['kcal'] = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']);
+        }
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'weekOffset' => $weekOffset,
+        'weekStartDisplay' => $weekStartDisplay,
+        'weekEndDisplay' => $weekEndDisplay,
+        'weeklySummary' => $weeklySummary,
+        'weekDays' => $weekDays
+    ]);
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -134,24 +163,24 @@ if ($weeklySummary['daysTracked'] > 0) {
             <i data-lucide="bar-chart-2" class="w-7 h-7 text-stone-700"></i>
             <h1 class="text-2xl font-semibold text-stone-800">Weekly Report</h1>
         </div>
-        <p class="text-center mb-6 text-stone-500 text-sm"><?php echo $weekStartDisplay; ?> - <?php echo $weekEndDisplay; ?></p>
+        <p class="text-center mb-6 text-stone-500 text-sm week-date-range"><?php echo $weekStartDisplay; ?> - <?php echo $weekEndDisplay; ?></p>
 
         <!-- Week Navigation -->
-        <div class="flex flex-wrap justify-center items-center mb-6 gap-2">
-            <a href="?week=<?php echo $weekOffset - 1; ?>" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-lg text-sm transition-colors">
+        <div id="week-nav-container" class="flex flex-wrap justify-center items-center mb-6 gap-2">
+            <a href="?week=<?php echo $weekOffset - 1; ?>" id="prev-week-btn" class="week-nav-btn inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-lg text-sm transition-colors">
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
                 Previous
             </a>
 
             <?php if ($weekOffset < 0): ?>
-                <a href="?week=<?php echo $weekOffset + 1; ?>" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-lg text-sm transition-colors">
+                <a href="?week=<?php echo $weekOffset + 1; ?>" id="next-week-btn" class="week-nav-btn inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-lg text-sm transition-colors">
                     Next
                     <i data-lucide="chevron-right" class="w-4 h-4"></i>
                 </a>
             <?php endif; ?>
 
             <?php if ($weekOffset != 0): ?>
-                <a href="?week=0" class="inline-flex items-center gap-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-lg text-sm transition-colors">
+                <a href="?week=0" id="current-week-btn" class="week-nav-btn inline-flex items-center gap-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-lg text-sm transition-colors">
                     <i data-lucide="calendar" class="w-4 h-4"></i>
                     Current
                 </a>
@@ -168,19 +197,19 @@ if ($weeklySummary['daysTracked'] > 0) {
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <div class="bg-stone-50 p-4 rounded-lg text-center">
                     <div class="text-xs text-stone-500 uppercase tracking-wide mb-1">Avg Calories</div>
-                    <div class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgKcal']; ?></div>
+                    <div id="avg-kcal" class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgKcal']; ?></div>
                 </div>
                 <div class="bg-stone-50 p-4 rounded-lg text-center">
                     <div class="text-xs text-stone-500 uppercase tracking-wide mb-1">Avg Protein</div>
-                    <div class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgProtein']; ?>g</div>
+                    <div id="avg-protein" class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgProtein']; ?>g</div>
                 </div>
                 <div class="bg-stone-50 p-4 rounded-lg text-center">
                     <div class="text-xs text-stone-500 uppercase tracking-wide mb-1">Avg Carbs</div>
-                    <div class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgCarbs']; ?>g</div>
+                    <div id="avg-carbs" class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgCarbs']; ?>g</div>
                 </div>
                 <div class="bg-stone-50 p-4 rounded-lg text-center">
                     <div class="text-xs text-stone-500 uppercase tracking-wide mb-1">Avg Fat</div>
-                    <div class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgFat']; ?>g</div>
+                    <div id="avg-fat" class="text-xl font-semibold text-stone-800"><?php echo $weeklySummary['avgFat']; ?>g</div>
                 </div>
             </div>
 
@@ -189,21 +218,21 @@ if ($weeklySummary['daysTracked'] > 0) {
                     <i data-lucide="calendar-check" class="w-5 h-5 text-stone-500"></i>
                     <div>
                         <div class="text-xs text-stone-500">Days Tracked</div>
-                        <div class="font-semibold text-stone-800"><?php echo $weeklySummary['daysTracked']; ?> / 7</div>
+                        <div id="days-tracked" class="font-semibold text-stone-800"><?php echo $weeklySummary['daysTracked']; ?> / 7</div>
                     </div>
                 </div>
                 <div class="bg-stone-50 p-3 rounded-lg flex items-center gap-3">
                     <i data-lucide="flame" class="w-5 h-5 text-stone-500"></i>
                     <div>
                         <div class="text-xs text-stone-500">Total Calories</div>
-                        <div class="font-semibold text-stone-800"><?php echo number_format($weeklySummary['totalKcal']); ?></div>
+                        <div id="total-kcal" class="font-semibold text-stone-800"><?php echo number_format($weeklySummary['totalKcal']); ?></div>
                     </div>
                 </div>
                 <div class="bg-stone-50 p-3 rounded-lg flex items-center gap-3">
                     <i data-lucide="beef" class="w-5 h-5 text-stone-500"></i>
                     <div>
                         <div class="text-xs text-stone-500">Total Protein</div>
-                        <div class="font-semibold text-stone-800"><?php echo $weeklySummary['totalProtein']; ?>g</div>
+                        <div id="total-protein" class="font-semibold text-stone-800"><?php echo $weeklySummary['totalProtein']; ?>g</div>
                     </div>
                 </div>
             </div>
@@ -227,7 +256,7 @@ if ($weeklySummary['daysTracked'] > 0) {
                             <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">F</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="daily-breakdown-tbody">
                         <?php foreach ($weekDays as $day): ?>
                             <tr class="<?php echo empty($day['meals']) ? 'text-stone-400' : 'hover:bg-stone-50'; ?> border-b border-stone-100 transition-colors">
                                 <td class="py-3 font-medium <?php echo empty($day['meals']) ? 'text-stone-400' : 'text-stone-700'; ?>"><?php echo strtoupper($day['date']); ?></td>
@@ -243,14 +272,14 @@ if ($weeklySummary['daysTracked'] > 0) {
         </div>
 
         <!-- Detailed View -->
-        <?php if ($weeklySummary['daysTracked'] > 0): ?>
+        <div id="detailed-view-section" class="<?php echo $weeklySummary['daysTracked'] > 0 ? '' : 'hidden'; ?>">
             <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
                 <div class="flex items-center gap-2 mb-4">
                     <i data-lucide="list" class="w-5 h-5 text-stone-500"></i>
                     <h2 class="text-lg font-medium text-stone-700">Detailed View</h2>
                 </div>
 
-                <div class="space-y-2">
+                <div id="detailed-view-container" class="space-y-2">
                     <?php foreach ($weekDays as $index => $day): ?>
                         <?php if (!empty($day['meals'])): ?>
                             <div class="border border-stone-200 rounded-lg overflow-hidden">
@@ -291,7 +320,7 @@ if ($weeklySummary['daysTracked'] > 0) {
                     <?php endforeach; ?>
                 </div>
             </div>
-        <?php endif; ?>
+        </div>
 
         <!-- Navigation Links -->
         <div class="flex justify-center gap-3">
@@ -311,14 +340,224 @@ if ($weeklySummary['daysTracked'] > 0) {
         lucide.createIcons();
 
         $(document).ready(function() {
-            // Toggle detailed day view
-            $('.day-header').on('click', function() {
-                const target = $(this).data('target');
-                const content = $('#' + target);
-                const icon = $(this).find('.toggle-icon');
+            let currentWeekOffset = <?php echo $weekOffset; ?>;
 
-                content.toggleClass('hidden');
-                icon.toggleClass('rotate-180');
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Function to bind day header toggle
+            function bindDayHeaders() {
+                $('.day-header').off('click').on('click', function() {
+                    const target = $(this).data('target');
+                    const content = $('#' + target);
+                    const icon = $(this).find('.toggle-icon');
+
+                    content.toggleClass('hidden');
+                    icon.toggleClass('rotate-180');
+                });
+            }
+
+            // Initial binding
+            bindDayHeaders();
+
+            // Function to load week data via AJAX
+            function loadWeek(weekOffset) {
+                $('.week-nav-btn').addClass('opacity-50').prop('disabled', true);
+
+                $.ajax({
+                    url: 'report.php',
+                    method: 'GET',
+                    data: { week: weekOffset },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            currentWeekOffset = response.weekOffset;
+
+                            // Update date range display
+                            $('.week-date-range').text(response.weekStartDisplay + ' - ' + response.weekEndDisplay);
+
+                            // Update URL without reload
+                            const newUrl = weekOffset === 0 ? 'report.php' : 'report.php?week=' + weekOffset;
+                            history.pushState({ week: weekOffset }, '', newUrl);
+
+                            // Update summary stats
+                            updateSummary(response.weeklySummary);
+
+                            // Update daily breakdown table
+                            updateDailyBreakdown(response.weekDays);
+
+                            // Update detailed view
+                            updateDetailedView(response.weekDays);
+
+                            // Update navigation buttons
+                            updateNavButtons(weekOffset);
+
+                            // Reinitialize icons
+                            lucide.createIcons();
+
+                            // Rebind day headers
+                            bindDayHeaders();
+                        }
+                        $('.week-nav-btn').removeClass('opacity-50').prop('disabled', false);
+                    },
+                    error: function() {
+                        alert('Error loading week data. Please try again.');
+                        $('.week-nav-btn').removeClass('opacity-50').prop('disabled', false);
+                    }
+                });
+            }
+
+            // Update summary section
+            function updateSummary(summary) {
+                $('#avg-kcal').text(summary.avgKcal);
+                $('#avg-protein').text(summary.avgProtein + 'g');
+                $('#avg-carbs').text(summary.avgCarbs + 'g');
+                $('#avg-fat').text(summary.avgFat + 'g');
+                $('#days-tracked').text(summary.daysTracked + ' / 7');
+                $('#total-kcal').text(summary.totalKcal.toLocaleString());
+                $('#total-protein').text(summary.totalProtein + 'g');
+            }
+
+            // Update daily breakdown table
+            function updateDailyBreakdown(weekDays) {
+                let html = '';
+                weekDays.forEach(function(day) {
+                    const isEmpty = day.meals.length === 0;
+                    const rowClass = isEmpty ? 'text-stone-400' : 'hover:bg-stone-50';
+                    const dateClass = isEmpty ? 'text-stone-400' : 'text-stone-700';
+
+                    html += `
+                        <tr class="${rowClass} border-b border-stone-100 transition-colors">
+                            <td class="py-3 font-medium ${dateClass}">${day.date.toUpperCase()}</td>
+                            <td class="py-3 text-center ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : day.totals.kcal}</td>
+                            <td class="py-3 text-center text-stone-500">${isEmpty ? '-' : day.totals.protein}</td>
+                            <td class="py-3 text-center text-stone-500">${isEmpty ? '-' : day.totals.carbs}</td>
+                            <td class="py-3 text-center text-stone-500">${isEmpty ? '-' : day.totals.fat}</td>
+                        </tr>
+                    `;
+                });
+                $('#daily-breakdown-tbody').html(html);
+            }
+
+            // Update detailed view section
+            function updateDetailedView(weekDays) {
+                let html = '';
+                let dayIndex = 0;
+
+                weekDays.forEach(function(day) {
+                    if (day.meals.length > 0) {
+                        let mealsHtml = '';
+                        day.meals.forEach(function(meal) {
+                            mealsHtml += `
+                                <tr class="border-t border-stone-100">
+                                    <td class="py-2 text-stone-700">${escapeHtml(meal.name)}</td>
+                                    <td class="py-2 text-center text-stone-600">${meal.kcal}</td>
+                                    <td class="py-2 text-center text-stone-500">${meal.protein}</td>
+                                    <td class="py-2 text-center text-stone-500">${meal.carbs}</td>
+                                    <td class="py-2 text-center text-stone-500">${meal.fat}</td>
+                                </tr>
+                            `;
+                        });
+
+                        html += `
+                            <div class="border border-stone-200 rounded-lg overflow-hidden">
+                                <div class="bg-stone-50 px-4 py-3 cursor-pointer day-header flex justify-between items-center" data-target="day-${dayIndex}">
+                                    <div class="font-medium text-stone-700">${day.date.toUpperCase()}</div>
+                                    <div class="flex items-center gap-2 text-sm text-stone-500">
+                                        ${day.totals.kcal} kcal
+                                        <i data-lucide="chevron-down" class="w-4 h-4 toggle-icon transition-transform"></i>
+                                    </div>
+                                </div>
+                                <div id="day-${dayIndex}" class="p-4 day-content hidden border-t border-stone-100">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="text-xs text-stone-500 uppercase tracking-wide">
+                                                <th class="pb-2 text-left">Meal</th>
+                                                <th class="pb-2 text-center">K</th>
+                                                <th class="pb-2 text-center">P</th>
+                                                <th class="pb-2 text-center">C</th>
+                                                <th class="pb-2 text-center">F</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${mealsHtml}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    dayIndex++;
+                });
+
+                const $container = $('#detailed-view-container');
+                if (html) {
+                    $container.html('<div class="space-y-2">' + html + '</div>');
+                    $('#detailed-view-section').removeClass('hidden');
+                } else {
+                    $('#detailed-view-section').addClass('hidden');
+                }
+            }
+
+            // Update navigation buttons
+            function updateNavButtons(weekOffset) {
+                // Update Previous button href
+                $('#prev-week-btn').attr('href', '?week=' + (weekOffset - 1));
+
+                // Show/hide Next button
+                if (weekOffset < 0) {
+                    const nextHtml = `
+                        <a href="?week=${weekOffset + 1}" id="next-week-btn" class="week-nav-btn inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-lg text-sm transition-colors">
+                            Next
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    `;
+                    if (!$('#next-week-btn').length) {
+                        $('#prev-week-btn').after(nextHtml);
+                    } else {
+                        $('#next-week-btn').attr('href', '?week=' + (weekOffset + 1));
+                    }
+                } else {
+                    $('#next-week-btn').remove();
+                }
+
+                // Show/hide Current button
+                if (weekOffset !== 0) {
+                    if (!$('#current-week-btn').length) {
+                        const currentHtml = `
+                            <a href="?week=0" id="current-week-btn" class="week-nav-btn inline-flex items-center gap-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-lg text-sm transition-colors">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                                Current
+                            </a>
+                        `;
+                        $('#week-nav-container').append(currentHtml);
+                    }
+                } else {
+                    $('#current-week-btn').remove();
+                }
+            }
+
+            // Handle navigation clicks with AJAX
+            $(document).on('click', '.week-nav-btn', function(e) {
+                e.preventDefault();
+                const href = $(this).attr('href');
+                const weekParam = new URLSearchParams(href.split('?')[1] || '');
+                const weekOffset = parseInt(weekParam.get('week')) || 0;
+                loadWeek(weekOffset);
+            });
+
+            // Handle browser back/forward
+            $(window).on('popstate', function(e) {
+                const state = e.originalEvent.state;
+                if (state && typeof state.week !== 'undefined') {
+                    loadWeek(state.week);
+                } else {
+                    loadWeek(0);
+                }
             });
         });
     </script>
