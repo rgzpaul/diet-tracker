@@ -315,7 +315,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                         <?php endif; ?>
 
                         <!-- Totals Row -->
-                        <tr class="bg-stone-50">
+                        <tr class="bg-stone-100">
                             <td class="py-3 font-semibold text-stone-800">Total</td>
                             <td class="py-3 text-center font-semibold text-stone-800 border-l border-stone-100"><?php echo $totalKcal; ?></td>
                             <td class="py-3 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo $totalProtein; ?></td>
