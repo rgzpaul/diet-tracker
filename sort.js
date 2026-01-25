@@ -63,10 +63,13 @@ function makeTablesSortable(tableSelector = 'table') {
 // Sort meal buttons by shade on load (darker shades first)
 const mealContainer = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-3.gap-3');
 if (mealContainer) {
-  const forms = Array.from(mealContainer.querySelectorAll('.meal-form'));
-  forms.sort((a, b) => {
-    const buttonA = a.querySelector('button');
-    const buttonB = b.querySelector('button');
+  // Select the .relative wrapper divs that contain the forms
+  const wrappers = Array.from(mealContainer.querySelectorAll('.relative'));
+  wrappers.sort((a, b) => {
+    const buttonA = a.querySelector('.meal-form button');
+    const buttonB = b.querySelector('.meal-form button');
+
+    if (!buttonA || !buttonB) return 0;
 
     // Extract color class from class list
     const colorA = Array.from(buttonA.classList).find(cls =>
@@ -85,8 +88,8 @@ if (mealContainer) {
     return (colorOrder[colorA] || 5) - (colorOrder[colorB] || 5);
   });
 
-  forms.forEach(form => {
-    mealContainer.appendChild(form);
+  wrappers.forEach(wrapper => {
+    mealContainer.appendChild(wrapper);
   });
 }
 
