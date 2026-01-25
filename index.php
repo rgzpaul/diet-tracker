@@ -304,7 +304,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                         <?php else: ?>
                             <?php foreach ($selectedDateMeals as $index => $meal): ?>
                                 <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
-                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="<?php echo $index; ?>">
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="<?php echo $index; ?>" data-name="<?php echo htmlspecialchars($meal['name']); ?>">
                                     <td class="py-3 px-1 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
                                     <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
                                     <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['protein']; ?></td>
@@ -494,7 +494,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
 
                             // Create new meal row
                             const newRow = `
-                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="${response.mealIndex}" style="opacity: 0;">
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="${response.mealIndex}" data-name="${escapeHtml(response.meal.name)}" style="opacity: 0;">
                                     <td class="py-3 px-1 text-stone-700">${escapeHtml(response.meal.name)}</td>
                                     <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${response.mealKcal}</td>
                                     <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${response.meal.protein}</td>
@@ -525,9 +525,11 @@ $displayDate = date('D d/m', strtotime($selectedDate));
             // Function to bind meal row click events
             function bindMealRowEvents() {
                 $('.meal-row').off('click').on('click', function() {
-                    if (confirm('Delete this meal from the log?')) {
-                        const $row = $(this);
-                        const mealIndex = $row.data('index');
+                    const $row = $(this);
+                    const mealIndex = $row.data('index');
+                    const mealName = $row.data('name');
+
+                    if (confirm('Delete ' + mealName + ' from the log?')) {
 
                         $.ajax({
                             url: 'index.php?date=' + selectedDate,
