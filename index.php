@@ -76,11 +76,23 @@ function calculateKcal($protein, $carbs, $fat)
 // Check if this is an AJAX request
 $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
+// Get selected date from URL parameter or default to today
+$selectedDate = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
+// Validate date format
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate) || !strtotime($selectedDate)) {
+    $selectedDate = date('Y-m-d');
+}
+// Don't allow future dates
+if (strtotime($selectedDate) > strtotime(date('Y-m-d'))) {
+    $selectedDate = date('Y-m-d');
+}
+$isToday = ($selectedDate === date('Y-m-d'));
+
 // Handle adding a meal
 if (isset($_POST['add_meal'])) {
     $mealName = $_POST['meal_name'];
-    $today = date('Y-m-d');
-    $dayKey = date('D d/m', strtotime($today));
+    $targetDate = isset($_POST['target_date']) ? $_POST['target_date'] : date('Y-m-d');
+    $dayKey = date('D d/m', strtotime($targetDate));
 
     // Find the meal in our database
     $mealToAdd = null;
@@ -91,10 +103,10 @@ if (isset($_POST['add_meal'])) {
         }
     }
 
-    // Add the meal to today's meals
+    // Add the meal to target date's meals
     if ($mealToAdd) {
-        if (!isset($dailyMeals[$today])) {
-            $dailyMeals[$today] = [
+        if (!isset($dailyMeals[$targetDate])) {
+            $dailyMeals[$targetDate] = [
                 'date' => $dayKey,
                 'meals' => []
             ];
@@ -107,19 +119,19 @@ if (isset($_POST['add_meal'])) {
             'fat' => $mealToAdd['fat'],
             'color' => isset($mealToAdd['color']) ? $mealToAdd['color'] : 'blue'
         ];
-        $dailyMeals[$today]['meals'][] = $newMeal;
+        $dailyMeals[$targetDate]['meals'][] = $newMeal;
 
         // Save the updated daily meals
         file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
 
         if ($isAjax) {
             // Calculate new totals
-            $todaysMeals = $dailyMeals[$today]['meals'];
+            $dateMeals = $dailyMeals[$targetDate]['meals'];
             $totalKcal = 0;
             $totalProtein = 0;
             $totalCarbs = 0;
             $totalFat = 0;
-            foreach ($todaysMeals as $m) {
+            foreach ($dateMeals as $m) {
                 $totalKcal += calculateKcal($m['protein'], $m['carbs'], $m['fat']);
                 $totalProtein += $m['protein'];
                 $totalCarbs += $m['carbs'];
@@ -131,7 +143,7 @@ if (isset($_POST['add_meal'])) {
                 'success' => true,
                 'meal' => $newMeal,
                 'mealKcal' => calculateKcal($newMeal['protein'], $newMeal['carbs'], $newMeal['fat']),
-                'mealIndex' => count($todaysMeals) - 1,
+                'mealIndex' => count($dateMeals) - 1,
                 'totals' => [
                     'kcal' => $totalKcal,
                     'protein' => $totalProtein,
@@ -154,27 +166,27 @@ if (isset($_POST['add_meal'])) {
     }
 }
 
-// Handle deleting a meal from today's meals
+// Handle deleting a meal from selected date's meals
 if (isset($_POST['delete_today_meal'])) {
     $mealIndex = (int)$_POST['meal_index'];
-    $today = date('Y-m-d');
+    $targetDate = isset($_POST['target_date']) ? $_POST['target_date'] : date('Y-m-d');
 
-    // Check if today has meals and the index is valid
-    if (isset($dailyMeals[$today]) && isset($dailyMeals[$today]['meals'][$mealIndex])) {
+    // Check if date has meals and the index is valid
+    if (isset($dailyMeals[$targetDate]) && isset($dailyMeals[$targetDate]['meals'][$mealIndex])) {
         // Remove the meal
-        array_splice($dailyMeals[$today]['meals'], $mealIndex, 1);
+        array_splice($dailyMeals[$targetDate]['meals'], $mealIndex, 1);
 
         // Save the updated daily meals
         file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
 
         if ($isAjax) {
             // Calculate new totals
-            $todaysMeals = $dailyMeals[$today]['meals'];
+            $dateMeals = $dailyMeals[$targetDate]['meals'];
             $totalKcal = 0;
             $totalProtein = 0;
             $totalCarbs = 0;
             $totalFat = 0;
-            foreach ($todaysMeals as $m) {
+            foreach ($dateMeals as $m) {
                 $totalKcal += calculateKcal($m['protein'], $m['carbs'], $m['fat']);
                 $totalProtein += $m['protein'];
                 $totalCarbs += $m['carbs'];
@@ -190,7 +202,7 @@ if (isset($_POST['delete_today_meal'])) {
                     'carbs' => $totalCarbs,
                     'fat' => $totalFat
                 ],
-                'mealsCount' => count($todaysMeals)
+                'mealsCount' => count($dateMeals)
             ]);
             exit;
         }
@@ -205,15 +217,14 @@ if (isset($_POST['delete_today_meal'])) {
     exit;
 }
 
-// Calculate totals for today
-$today = date('Y-m-d');
-$todaysMeals = isset($dailyMeals[$today]) ? $dailyMeals[$today]['meals'] : [];
+// Calculate totals for selected date
+$selectedDateMeals = isset($dailyMeals[$selectedDate]) ? $dailyMeals[$selectedDate]['meals'] : [];
 $totalKcal = 0;
 $totalProtein = 0;
 $totalCarbs = 0;
 $totalFat = 0;
 
-foreach ($todaysMeals as $meal) {
+foreach ($selectedDateMeals as $meal) {
     $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']);
     $totalKcal += $mealKcal;
     $totalProtein += $meal['protein'];
@@ -221,8 +232,8 @@ foreach ($todaysMeals as $meal) {
     $totalFat += $meal['fat'];
 }
 
-// Format today's date for display
-$displayDate = date('D d/m');
+// Format selected date for display
+$displayDate = date('D d/m', strtotime($selectedDate));
 ?>
 
 <!DOCTYPE html>
@@ -261,11 +272,17 @@ $displayDate = date('D d/m');
             <h1 class="text-2xl font-semibold text-stone-800">Daily Tracker</h1>
         </div>
 
-        <!-- Today's Meals Table -->
+        <!-- Selected Date's Meals Table -->
         <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
             <div class="flex items-center gap-2 mb-4">
-                <i data-lucide="calendar" class="w-5 h-5 text-stone-500"></i>
-                <h2 class="text-lg font-medium text-stone-700"><?php echo strtoupper($displayDate); ?></h2>
+                <div id="date-picker-trigger" class="flex items-center gap-2 cursor-pointer hover:bg-stone-100 rounded-lg px-2 py-1 -mx-2 -my-1 transition-colors">
+                    <i data-lucide="calendar" class="w-5 h-5 text-stone-500"></i>
+                    <h2 class="text-lg font-medium text-stone-700"><?php echo strtoupper($displayDate); ?></h2>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-stone-400"></i>
+                </div>
+                <?php if (!$isToday): ?>
+                    <a href="index.php" class="ml-auto text-sm text-blue-600 hover:text-blue-700 font-medium">Today</a>
+                <?php endif; ?>
             </div>
 
             <div class="overflow-x-auto">
@@ -280,15 +297,15 @@ $displayDate = date('D d/m');
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (empty($todaysMeals)): ?>
+                        <?php if (empty($selectedDateMeals)): ?>
                             <tr>
                                 <td colspan="5" class="py-8 text-center text-stone-400">
                                     <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-                                    <p>No meals added today</p>
+                                    <p>No meals added <?php echo $isToday ? 'today' : 'on this day'; ?></p>
                                 </td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($todaysMeals as $index => $meal): ?>
+                            <?php foreach ($selectedDateMeals as $index => $meal): ?>
                                 <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="<?php echo $index; ?>">
                                     <td class="py-3 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
@@ -326,6 +343,7 @@ $displayDate = date('D d/m');
                     <div class="relative">
                         <form method="post" class="meal-form h-full">
                             <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
+                            <input type="hidden" name="target_date" value="<?php echo $selectedDate; ?>">
                             <button type="submit" name="add_meal"
                                 class="meal-button h-full w-full
                                 <?php
@@ -392,26 +410,81 @@ $displayDate = date('D d/m');
         </div>
     </div>
 
+    <!-- Date Picker Modal -->
+    <div id="date-picker-modal" class="fixed inset-0 bg-stone-900/50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl border border-stone-200 p-6 w-full max-w-sm mx-4">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="calendar" class="w-5 h-5 text-stone-500"></i>
+                <h3 class="text-lg font-medium text-stone-700">Select Date</h3>
+            </div>
+            <div class="mb-4">
+                <input type="date" id="date-picker-input"
+                    value="<?php echo $selectedDate; ?>"
+                    max="<?php echo date('Y-m-d'); ?>"
+                    class="w-full px-4 py-3 border border-stone-300 rounded-lg text-stone-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg">
+            </div>
+            <div class="flex gap-3">
+                <button type="button" id="date-picker-today" class="flex-1 px-4 py-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 font-medium transition-colors">
+                    Today
+                </button>
+                <button type="button" id="close-date-picker" class="flex-1 px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Current selected date
+        const selectedDate = '<?php echo $selectedDate; ?>';
+
         $(document).ready(function() {
+            // Date picker functionality
+            $('#date-picker-trigger').on('click', function() {
+                $('#date-picker-modal').removeClass('hidden');
+            });
+
+            $('#close-date-picker').on('click', function() {
+                $('#date-picker-modal').addClass('hidden');
+            });
+
+            $('#date-picker-modal').on('click', function(e) {
+                if (e.target === this) {
+                    $(this).addClass('hidden');
+                }
+            });
+
+            $('#date-picker-input').on('change', function() {
+                const newDate = $(this).val();
+                if (newDate) {
+                    window.location.href = 'index.php?date=' + newDate;
+                }
+            });
+
+            $('#date-picker-today').on('click', function() {
+                window.location.href = 'index.php';
+            });
+
             // AJAX handler for adding meals
             $('.meal-form').on('submit', function(e) {
                 e.preventDefault();
                 const $form = $(this);
                 const $button = $form.find('button');
                 const mealName = $form.find('input[name="meal_name"]').val();
+                const targetDate = $form.find('input[name="target_date"]').val();
 
                 $button.addClass('opacity-50').prop('disabled', true);
 
                 $.ajax({
-                    url: 'index.php',
+                    url: 'index.php?date=' + targetDate,
                     method: 'POST',
                     data: {
                         add_meal: 1,
-                        meal_name: mealName
+                        meal_name: mealName,
+                        target_date: targetDate
                     },
                     dataType: 'json',
                     success: function(response) {
@@ -455,16 +528,17 @@ $displayDate = date('D d/m');
             // Function to bind meal row click events
             function bindMealRowEvents() {
                 $('.meal-row').off('click').on('click', function() {
-                    if (confirm('Delete this meal from today\'s log?')) {
+                    if (confirm('Delete this meal from the log?')) {
                         const $row = $(this);
                         const mealIndex = $row.data('index');
 
                         $.ajax({
-                            url: 'index.php',
+                            url: 'index.php?date=' + selectedDate,
                             method: 'POST',
                             data: {
                                 delete_today_meal: 1,
-                                meal_index: mealIndex
+                                meal_index: mealIndex,
+                                target_date: selectedDate
                             },
                             dataType: 'json',
                             success: function(response) {
@@ -481,11 +555,12 @@ $displayDate = date('D d/m');
 
                                         // Show "No meals" if empty
                                         if (response.mealsCount === 0) {
+                                            const isToday = selectedDate === '<?php echo date('Y-m-d'); ?>';
                                             const emptyRow = `
                                                 <tr>
                                                     <td colspan="5" class="py-8 text-center text-stone-400">
                                                         <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-                                                        <p>No meals added today</p>
+                                                        <p>No meals added ${isToday ? 'today' : 'on this day'}</p>
                                                     </td>
                                                 </tr>
                                             `;
