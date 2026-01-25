@@ -250,20 +250,20 @@ if ($isAjax) {
                     <thead>
                         <tr class="border-b border-stone-200">
                             <th class="pb-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Day</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">K</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">P</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">C</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">F</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
                         </tr>
                     </thead>
                     <tbody id="daily-breakdown-tbody">
                         <?php foreach ($weekDays as $day): ?>
                             <tr class="<?php echo empty($day['meals']) ? 'text-stone-400' : 'hover:bg-stone-50'; ?> border-b border-stone-100 transition-colors">
                                 <td class="py-3 font-medium <?php echo empty($day['meals']) ? 'text-stone-400' : 'text-stone-700'; ?>"><?php echo strtoupper($day['date']); ?></td>
-                                <td class="py-3 text-center <?php echo empty($day['meals']) ? '' : 'font-medium text-stone-600'; ?>"><?php echo empty($day['meals']) ? '-' : $day['totals']['kcal']; ?></td>
-                                <td class="py-3 text-center text-stone-500"><?php echo empty($day['meals']) ? '-' : $day['totals']['protein']; ?></td>
-                                <td class="py-3 text-center text-stone-500"><?php echo empty($day['meals']) ? '-' : $day['totals']['carbs']; ?></td>
-                                <td class="py-3 text-center text-stone-500"><?php echo empty($day['meals']) ? '-' : $day['totals']['fat']; ?></td>
+                                <td class="py-3 text-center border-l border-stone-100 <?php echo empty($day['meals']) ? '' : 'font-medium text-stone-600'; ?>"><?php echo empty($day['meals']) ? '-' : $day['totals']['kcal']; ?></td>
+                                <td class="py-3 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['protein']; ?></td>
+                                <td class="py-3 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['carbs']; ?></td>
+                                <td class="py-3 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['fat']; ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -295,10 +295,10 @@ if ($isAjax) {
                                         <thead>
                                             <tr class="text-xs text-stone-500 uppercase tracking-wide">
                                                 <th class="pb-2 text-left">Meal</th>
-                                                <th class="pb-2 text-center">K</th>
-                                                <th class="pb-2 text-center">P</th>
-                                                <th class="pb-2 text-center">C</th>
-                                                <th class="pb-2 text-center">F</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">K</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">P</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">C</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">F</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -306,10 +306,10 @@ if ($isAjax) {
                                                 <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                                                 <tr class="border-t border-stone-100">
                                                     <td class="py-2 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
-                                                    <td class="py-2 text-center text-stone-600"><?php echo $mealKcal; ?></td>
-                                                    <td class="py-2 text-center text-stone-500"><?php echo $meal['protein']; ?></td>
-                                                    <td class="py-2 text-center text-stone-500"><?php echo $meal['carbs']; ?></td>
-                                                    <td class="py-2 text-center text-stone-500"><?php echo $meal['fat']; ?></td>
+                                                    <td class="py-2 text-center text-stone-600 border-l border-stone-100"><?php echo $mealKcal; ?></td>
+                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['protein']; ?></td>
+                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['carbs']; ?></td>
+                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['fat']; ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -433,10 +433,10 @@ if ($isAjax) {
                     html += `
                         <tr class="${rowClass} border-b border-stone-100 transition-colors">
                             <td class="py-3 font-medium ${dateClass}">${day.date.toUpperCase()}</td>
-                            <td class="py-3 text-center ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : day.totals.kcal}</td>
-                            <td class="py-3 text-center text-stone-500">${isEmpty ? '-' : day.totals.protein}</td>
-                            <td class="py-3 text-center text-stone-500">${isEmpty ? '-' : day.totals.carbs}</td>
-                            <td class="py-3 text-center text-stone-500">${isEmpty ? '-' : day.totals.fat}</td>
+                            <td class="py-3 text-center border-l border-stone-100 ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : day.totals.kcal}</td>
+                            <td class="py-3 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : day.totals.protein}</td>
+                            <td class="py-3 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : day.totals.carbs}</td>
+                            <td class="py-3 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : day.totals.fat}</td>
                         </tr>
                     `;
                 });
@@ -455,10 +455,10 @@ if ($isAjax) {
                             mealsHtml += `
                                 <tr class="border-t border-stone-100">
                                     <td class="py-2 text-stone-700">${escapeHtml(meal.name)}</td>
-                                    <td class="py-2 text-center text-stone-600">${meal.kcal}</td>
-                                    <td class="py-2 text-center text-stone-500">${meal.protein}</td>
-                                    <td class="py-2 text-center text-stone-500">${meal.carbs}</td>
-                                    <td class="py-2 text-center text-stone-500">${meal.fat}</td>
+                                    <td class="py-2 text-center text-stone-600 border-l border-stone-100">${meal.kcal}</td>
+                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${meal.protein}</td>
+                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${meal.carbs}</td>
+                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${meal.fat}</td>
                                 </tr>
                             `;
                         });
@@ -477,10 +477,10 @@ if ($isAjax) {
                                         <thead>
                                             <tr class="text-xs text-stone-500 uppercase tracking-wide">
                                                 <th class="pb-2 text-left">Meal</th>
-                                                <th class="pb-2 text-center">K</th>
-                                                <th class="pb-2 text-center">P</th>
-                                                <th class="pb-2 text-center">C</th>
-                                                <th class="pb-2 text-center">F</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">K</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">P</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">C</th>
+                                                <th class="pb-2 text-center border-l border-stone-100">F</th>
                                             </tr>
                                         </thead>
                                         <tbody>
