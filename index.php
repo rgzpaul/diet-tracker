@@ -68,7 +68,8 @@ $meals = json_decode(file_get_contents($mealsFile), true);
 $dailyMeals = json_decode(file_get_contents($dailyMealsFile), true);
 
 // Function to calculate kcal based on macros
-function calculateKcal($protein, $carbs, $fat) {
+function calculateKcal($protein, $carbs, $fat)
+{
     return ($protein * 4) + ($carbs * 4) + ($fat * 9);
 }
 
@@ -77,7 +78,7 @@ if (isset($_POST['add_meal'])) {
     $mealName = $_POST['meal_name'];
     $today = date('Y-m-d');
     $dayKey = date('D d/m', strtotime($today)); // Format: "LUN 22/03"
-    
+
     // Find the meal in our database
     $mealToAdd = null;
     foreach ($meals as $meal) {
@@ -86,7 +87,7 @@ if (isset($_POST['add_meal'])) {
             break;
         }
     }
-    
+
     // Add the meal to today's meals
     if ($mealToAdd) {
         if (!isset($dailyMeals[$today])) {
@@ -95,7 +96,7 @@ if (isset($_POST['add_meal'])) {
                 'meals' => []
             ];
         }
-        
+
         $dailyMeals[$today]['meals'][] = [
             'name' => $mealToAdd['name'],
             'protein' => $mealToAdd['protein'],
@@ -103,10 +104,10 @@ if (isset($_POST['add_meal'])) {
             'fat' => $mealToAdd['fat'],
             'color' => isset($mealToAdd['color']) ? $mealToAdd['color'] : 'blue'
         ];
-        
+
         // Save the updated daily meals
         file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
-        
+
         // Redirect to prevent form resubmission
         header("Location: " . $_SERVER['PHP_SELF']);
         exit;
@@ -117,16 +118,16 @@ if (isset($_POST['add_meal'])) {
 if (isset($_POST['delete_today_meal'])) {
     $mealIndex = (int)$_POST['meal_index'];
     $today = date('Y-m-d');
-    
+
     // Check if today has meals and the index is valid
     if (isset($dailyMeals[$today]) && isset($dailyMeals[$today]['meals'][$mealIndex])) {
         // Remove the meal
         array_splice($dailyMeals[$today]['meals'], $mealIndex, 1);
-        
+
         // Save the updated daily meals
         file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
     }
-    
+
     // Redirect to prevent form resubmission
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
@@ -154,10 +155,13 @@ $displayDate = date('D d/m');
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meal Tracker</title>
+    <!-- Manifest and Icons for PWA -->
+    <link rel="manifest" href="./manifest.json">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -167,14 +171,15 @@ $displayDate = date('D d/m');
         }
     </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-3xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Daily Meal Tracker</h1>
-        
+
         <!-- Today's Meals Table -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4 text-center"><?php echo strtoupper($displayDate); ?></h2>
-            
+
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse">
                     <thead>
@@ -203,7 +208,7 @@ $displayDate = date('D d/m');
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
-                        
+
                         <!-- Totals Row -->
                         <tr class="bg-blue-50 font-bold">
                             <td class="border p-2">TOTAL</td>
@@ -216,21 +221,21 @@ $displayDate = date('D d/m');
                 </table>
             </div>
         </div>
-        
+
         <!-- Meal Buttons -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Add a Meal</h2>
-            
+
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <?php foreach ($meals as $meal): ?>
                     <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                     <form method="post" class="meal-form">
                         <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
-                        <button type="submit" name="add_meal" 
+                        <button type="submit" name="add_meal"
                             class="meal-button h-full w-full 
-                            <?php 
+                            <?php
                             $buttonColor = isset($meal['color']) ? $meal['color'] : 'blue';
-                            switch($buttonColor) {
+                            switch ($buttonColor) {
                                 case 'brown':
                                     echo 'bg-amber-800 hover:bg-amber-900';
                                     break;
@@ -248,9 +253,9 @@ $displayDate = date('D d/m');
                             ?> text-white font-medium py-3 px-4 rounded-lg text-center">
                             <div class="font-bold"><?php echo htmlspecialchars($meal['name']); ?></div>
                             <div class="text-sm mt-1">
-                                <?php echo $mealKcal; ?> kcal | 
-                                P: <?php echo $meal['protein']; ?>g | 
-                                C: <?php echo $meal['carbs']; ?>g | 
+                                <?php echo $mealKcal; ?> kcal |
+                                P: <?php echo $meal['protein']; ?>g |
+                                C: <?php echo $meal['carbs']; ?>g |
                                 F: <?php echo $meal['fat']; ?>g
                             </div>
                         </button>
@@ -258,7 +263,7 @@ $displayDate = date('D d/m');
                 <?php endforeach; ?>
             </div>
         </div>
-        
+
         <!-- Navigation Links -->
         <div class="text-center mb-8">
             <a href="report.php" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 mx-2 rounded-lg text-center">
@@ -282,7 +287,7 @@ $displayDate = date('D d/m');
                 // Add a loading state or animation if desired
                 $(this).find('button').addClass('bg-blue-800').text('Adding...');
             });
-            
+
             // Click event for meal rows
             $('.meal-row').on('click', function() {
                 if (confirm('Delete this meal from today\'s log?')) {
@@ -295,4 +300,5 @@ $displayDate = date('D d/m');
     </script>
     <script src="sort.js"></script>
 </body>
+
 </html>

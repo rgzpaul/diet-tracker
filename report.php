@@ -10,7 +10,8 @@ if (!file_exists($dailyMealsFile)) {
 $dailyMeals = json_decode(file_get_contents($dailyMealsFile), true);
 
 // Function to calculate kcal based on macros
-function calculateKcal($protein, $carbs, $fat) {
+function calculateKcal($protein, $carbs, $fat)
+{
     return ($protein * 4) + ($carbs * 4) + ($fat * 9);
 }
 
@@ -62,7 +63,7 @@ for ($i = 0; $i < 7; $i++) {
     $currentDay->modify("+$i days");
     $dateKey = $currentDay->format('Y-m-d');
     $displayKey = $currentDay->format('D d/m');
-    
+
     $dayData = [
         'date' => $displayKey,
         'meals' => [],
@@ -73,11 +74,11 @@ for ($i = 0; $i < 7; $i++) {
             'fat' => 0
         ]
     ];
-    
+
     // If we have data for this day, add it
     if (isset($dailyMeals[$dateKey])) {
         $dayData['meals'] = $dailyMeals[$dateKey]['meals'];
-        
+
         // Calculate totals for this day
         foreach ($dayData['meals'] as $meal) {
             $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']);
@@ -86,7 +87,7 @@ for ($i = 0; $i < 7; $i++) {
             $dayData['totals']['carbs'] += $meal['carbs'];
             $dayData['totals']['fat'] += $meal['fat'];
         }
-        
+
         // Add to weekly totals
         $weeklySummary['totalKcal'] += $dayData['totals']['kcal'];
         $weeklySummary['totalProtein'] += $dayData['totals']['protein'];
@@ -94,7 +95,7 @@ for ($i = 0; $i < 7; $i++) {
         $weeklySummary['totalFat'] += $dayData['totals']['fat'];
         $weeklySummary['daysTracked']++;
     }
-    
+
     $weekDays[] = $dayData;
 }
 
@@ -109,18 +110,23 @@ if ($weeklySummary['daysTracked'] > 0) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weekly Report - Meal Tracker</title>
+    <!-- Manifest and Icons for PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#1a73e8">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-3xl mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold text-center mb-2 text-green-700">Weekly Meal Report</h1>
         <p class="text-center mb-4 text-gray-600"><?php echo $weekStartDisplay; ?> - <?php echo $weekEndDisplay; ?></p>
-        
+
         <!-- Week Navigation -->
         <div class="flex flex-wrap justify-center items-center mb-8 gap-2">
             <a href="?week=<?php echo $weekOffset - 1; ?>" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg flex items-center">
@@ -129,27 +135,27 @@ if ($weeklySummary['daysTracked'] > 0) {
                 </svg>
                 Previous Week
             </a>
-            
+
             <?php if ($weekOffset < 0): ?>
-            <a href="?week=<?php echo $weekOffset + 1; ?>" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg flex items-center">
-                Next Week
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </a>
+                <a href="?week=<?php echo $weekOffset + 1; ?>" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg flex items-center">
+                    Next Week
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
             <?php endif; ?>
-            
+
             <?php if ($weekOffset != 0): ?>
-            <a href="?week=0" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg">
-                Current Week
-            </a>
+                <a href="?week=0" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg">
+                    Current Week
+                </a>
             <?php endif; ?>
         </div>
-        
+
         <!-- Weekly Summary -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Weekly Summary</h2>
-            
+
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-green-50 p-4 rounded-lg text-center">
                     <div class="text-sm text-gray-600">Avg. Daily Calories</div>
@@ -168,12 +174,12 @@ if ($weeklySummary['daysTracked'] > 0) {
                     <div class="text-2xl font-bold text-red-700"><?php echo $weeklySummary['avgFat']; ?> g</div>
                 </div>
             </div>
-            
+
             <div class="bg-gray-50 p-4 rounded-lg text-center mb-4">
                 <div class="text-sm text-gray-600">Days Tracked</div>
                 <div class="text-xl font-semibold"><?php echo $weeklySummary['daysTracked']; ?> of 7 days</div>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-green-50 p-4 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Total Weekly Calories</div>
@@ -182,18 +188,18 @@ if ($weeklySummary['daysTracked'] > 0) {
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <div class="text-sm text-gray-600 mb-1">Total Weekly Macros</div>
                     <div class="text-lg">
-                        P: <span class="font-semibold"><?php echo $weeklySummary['totalProtein']; ?> g</span> | 
-                        C: <span class="font-semibold"><?php echo $weeklySummary['totalCarbs']; ?> g</span> | 
+                        P: <span class="font-semibold"><?php echo $weeklySummary['totalProtein']; ?> g</span> |
+                        C: <span class="font-semibold"><?php echo $weeklySummary['totalCarbs']; ?> g</span> |
                         F: <span class="font-semibold"><?php echo $weeklySummary['totalFat']; ?> g</span>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Daily Breakdown -->
         <div class="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 class="text-xl font-semibold mb-4">Daily Breakdown</h2>
-            
+
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse">
                     <thead>
@@ -219,57 +225,57 @@ if ($weeklySummary['daysTracked'] > 0) {
                 </table>
             </div>
         </div>
-        
+
         <!-- Detailed View (Optional, expandable sections) -->
         <?php if ($weeklySummary['daysTracked'] > 0): ?>
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Detailed Daily View</h2>
-            
-            <div class="space-y-4">
-                <?php foreach ($weekDays as $index => $day): ?>
-                    <?php if (!empty($day['meals'])): ?>
-                        <div class="border rounded-lg overflow-hidden">
-                            <div class="bg-gray-100 p-3 cursor-pointer day-header" data-target="day-<?php echo $index; ?>">
-                                <div class="flex justify-between items-center">
-                                    <div class="font-medium"><?php echo strtoupper($day['date']); ?></div>
-                                    <div>
-                                        <?php echo $day['totals']['kcal']; ?> kcal
-                                        <span class="ml-1 text-gray-500">▼</span>
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <h2 class="text-xl font-semibold mb-4">Detailed Daily View</h2>
+
+                <div class="space-y-4">
+                    <?php foreach ($weekDays as $index => $day): ?>
+                        <?php if (!empty($day['meals'])): ?>
+                            <div class="border rounded-lg overflow-hidden">
+                                <div class="bg-gray-100 p-3 cursor-pointer day-header" data-target="day-<?php echo $index; ?>">
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium"><?php echo strtoupper($day['date']); ?></div>
+                                        <div>
+                                            <?php echo $day['totals']['kcal']; ?> kcal
+                                            <span class="ml-1 text-gray-500">▼</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div id="day-<?php echo $index; ?>" class="p-3 day-content hidden">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="text-sm text-gray-600">
-                                            <th class="p-1 text-left">Meal</th>
-                                            <th class="p-1 text-center">K</th>
-                                            <th class="p-1 text-center">P</th>
-                                            <th class="p-1 text-center">C</th>
-                                            <th class="p-1 text-center">F</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($day['meals'] as $meal): ?>
-                                            <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
-                                            <tr class="border-t">
-                                                <td class="p-1"><?php echo htmlspecialchars($meal['name']); ?></td>
-                                                <td class="p-1 text-center"><?php echo $mealKcal; ?></td>
-                                                <td class="p-1 text-center"><?php echo $meal['protein']; ?></td>
-                                                <td class="p-1 text-center"><?php echo $meal['carbs']; ?></td>
-                                                <td class="p-1 text-center"><?php echo $meal['fat']; ?></td>
+                                <div id="day-<?php echo $index; ?>" class="p-3 day-content hidden">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="text-sm text-gray-600">
+                                                <th class="p-1 text-left">Meal</th>
+                                                <th class="p-1 text-center">K</th>
+                                                <th class="p-1 text-center">P</th>
+                                                <th class="p-1 text-center">C</th>
+                                                <th class="p-1 text-center">F</th>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($day['meals'] as $meal): ?>
+                                                <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
+                                                <tr class="border-t">
+                                                    <td class="p-1"><?php echo htmlspecialchars($meal['name']); ?></td>
+                                                    <td class="p-1 text-center"><?php echo $mealKcal; ?></td>
+                                                    <td class="p-1 text-center"><?php echo $meal['protein']; ?></td>
+                                                    <td class="p-1 text-center"><?php echo $meal['carbs']; ?></td>
+                                                    <td class="p-1 text-center"><?php echo $meal['fat']; ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
-        </div>
         <?php endif; ?>
-        
+
         <!-- Navigation Links -->
         <div class="text-center">
             <a href="index.php" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 mx-2 rounded-lg text-center">
@@ -280,7 +286,7 @@ if ($weeklySummary['daysTracked'] > 0) {
             </a>
         </div>
     </div>
-    
+
     <script>
         $(document).ready(function() {
             // Toggle detailed day view
@@ -295,4 +301,5 @@ if ($weeklySummary['daysTracked'] > 0) {
     </script>
     <script src="sort.js"></script>
 </body>
+
 </html>
