@@ -73,11 +73,14 @@ function calculateKcal($protein, $carbs, $fat)
     return ($protein * 4) + ($carbs * 4) + ($fat * 9);
 }
 
+// Check if this is an AJAX request
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
 // Handle adding a meal
 if (isset($_POST['add_meal'])) {
     $mealName = $_POST['meal_name'];
     $today = date('Y-m-d');
-    $dayKey = date('D d/m', strtotime($today)); // Format: "LUN 22/03"
+    $dayKey = date('D d/m', strtotime($today));
 
     // Find the meal in our database
     $mealToAdd = null;
@@ -97,19 +100,56 @@ if (isset($_POST['add_meal'])) {
             ];
         }
 
-        $dailyMeals[$today]['meals'][] = [
+        $newMeal = [
             'name' => $mealToAdd['name'],
             'protein' => $mealToAdd['protein'],
             'carbs' => $mealToAdd['carbs'],
             'fat' => $mealToAdd['fat'],
             'color' => isset($mealToAdd['color']) ? $mealToAdd['color'] : 'blue'
         ];
+        $dailyMeals[$today]['meals'][] = $newMeal;
 
         // Save the updated daily meals
         file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
 
-        // Redirect to prevent form resubmission
+        if ($isAjax) {
+            // Calculate new totals
+            $todaysMeals = $dailyMeals[$today]['meals'];
+            $totalKcal = 0;
+            $totalProtein = 0;
+            $totalCarbs = 0;
+            $totalFat = 0;
+            foreach ($todaysMeals as $m) {
+                $totalKcal += calculateKcal($m['protein'], $m['carbs'], $m['fat']);
+                $totalProtein += $m['protein'];
+                $totalCarbs += $m['carbs'];
+                $totalFat += $m['fat'];
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'meal' => $newMeal,
+                'mealKcal' => calculateKcal($newMeal['protein'], $newMeal['carbs'], $newMeal['fat']),
+                'mealIndex' => count($todaysMeals) - 1,
+                'totals' => [
+                    'kcal' => $totalKcal,
+                    'protein' => $totalProtein,
+                    'carbs' => $totalCarbs,
+                    'fat' => $totalFat
+                ]
+            ]);
+            exit;
+        }
+
+        // Redirect to prevent form resubmission (non-AJAX fallback)
         header("Location: " . $_SERVER['PHP_SELF']);
+        exit;
+    }
+
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Meal not found']);
         exit;
     }
 }
@@ -126,9 +166,41 @@ if (isset($_POST['delete_today_meal'])) {
 
         // Save the updated daily meals
         file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
+
+        if ($isAjax) {
+            // Calculate new totals
+            $todaysMeals = $dailyMeals[$today]['meals'];
+            $totalKcal = 0;
+            $totalProtein = 0;
+            $totalCarbs = 0;
+            $totalFat = 0;
+            foreach ($todaysMeals as $m) {
+                $totalKcal += calculateKcal($m['protein'], $m['carbs'], $m['fat']);
+                $totalProtein += $m['protein'];
+                $totalCarbs += $m['carbs'];
+                $totalFat += $m['fat'];
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'totals' => [
+                    'kcal' => $totalKcal,
+                    'protein' => $totalProtein,
+                    'carbs' => $totalCarbs,
+                    'fat' => $totalFat
+                ],
+                'mealsCount' => count($todaysMeals)
+            ]);
+            exit;
+        }
+    } else if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Meal not found']);
+        exit;
     }
 
-    // Redirect to prevent form resubmission
+    // Redirect to prevent form resubmission (non-AJAX fallback)
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
@@ -296,29 +368,143 @@ $displayDate = date('D d/m');
         </div>
     </div>
 
-    <!-- Delete Meal Form (Hidden) -->
-    <form id="delete-meal-form" method="post" class="hidden">
-        <input type="hidden" name="meal_index" id="meal-index-to-delete">
-        <input type="hidden" name="delete_today_meal" value="1">
-    </form>
-
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
 
         $(document).ready(function() {
-            $('.meal-form').on('submit', function() {
-                $(this).find('button').addClass('opacity-50').prop('disabled', true);
+            // AJAX handler for adding meals
+            $('.meal-form').on('submit', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $button = $form.find('button');
+                const mealName = $form.find('input[name="meal_name"]').val();
+
+                $button.addClass('opacity-50').prop('disabled', true);
+
+                $.ajax({
+                    url: 'index.php',
+                    method: 'POST',
+                    data: {
+                        add_meal: 1,
+                        meal_name: mealName
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove "No meals" message if present
+                            const $noMealsRow = $('tbody tr td[colspan="5"]').closest('tr');
+                            if ($noMealsRow.length) {
+                                $noMealsRow.remove();
+                            }
+
+                            // Create new meal row
+                            const newRow = `
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="${response.mealIndex}" style="opacity: 0;">
+                                    <td class="py-3 text-stone-700">${escapeHtml(response.meal.name)}</td>
+                                    <td class="py-3 text-center text-stone-600 font-medium">${response.mealKcal}</td>
+                                    <td class="py-3 text-center text-stone-500">${response.meal.protein}</td>
+                                    <td class="py-3 text-center text-stone-500">${response.meal.carbs}</td>
+                                    <td class="py-3 text-center text-stone-500">${response.meal.fat}</td>
+                                </tr>
+                            `;
+
+                            // Insert before totals row
+                            const $totalsRow = $('tbody tr.bg-stone-50');
+                            $(newRow).insertBefore($totalsRow).animate({opacity: 1}, 200);
+
+                            // Update totals
+                            updateTotals(response.totals);
+
+                            // Rebind click events
+                            bindMealRowEvents();
+                        }
+                        $button.removeClass('opacity-50').prop('disabled', false);
+                    },
+                    error: function() {
+                        $button.removeClass('opacity-50').prop('disabled', false);
+                        alert('Error adding meal. Please try again.');
+                    }
+                });
             });
 
-            // Click event for meal rows
-            $('.meal-row').on('click', function() {
-                if (confirm('Delete this meal from today\'s log?')) {
-                    const mealIndex = $(this).data('index');
-                    $('#meal-index-to-delete').val(mealIndex);
-                    $('#delete-meal-form').submit();
-                }
-            });
+            // Function to bind meal row click events
+            function bindMealRowEvents() {
+                $('.meal-row').off('click').on('click', function() {
+                    if (confirm('Delete this meal from today\'s log?')) {
+                        const $row = $(this);
+                        const mealIndex = $row.data('index');
+
+                        $.ajax({
+                            url: 'index.php',
+                            method: 'POST',
+                            data: {
+                                delete_today_meal: 1,
+                                meal_index: mealIndex
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    // Animate row removal
+                                    $row.animate({opacity: 0}, 200, function() {
+                                        $(this).remove();
+
+                                        // Update totals
+                                        updateTotals(response.totals);
+
+                                        // Re-index remaining rows
+                                        reindexMealRows();
+
+                                        // Show "No meals" if empty
+                                        if (response.mealsCount === 0) {
+                                            const emptyRow = `
+                                                <tr>
+                                                    <td colspan="5" class="py-8 text-center text-stone-400">
+                                                        <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                                                        <p>No meals added today</p>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                            $(emptyRow).insertBefore($('tbody tr.bg-stone-50'));
+                                            lucide.createIcons();
+                                        }
+                                    });
+                                }
+                            },
+                            error: function() {
+                                alert('Error deleting meal. Please try again.');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Initial binding
+            bindMealRowEvents();
+
+            // Function to update totals
+            function updateTotals(totals) {
+                const $totalsRow = $('tbody tr.bg-stone-50');
+                $totalsRow.find('td:eq(1)').text(totals.kcal);
+                $totalsRow.find('td:eq(2)').text(totals.protein);
+                $totalsRow.find('td:eq(3)').text(totals.carbs);
+                $totalsRow.find('td:eq(4)').text(totals.fat);
+            }
+
+            // Function to re-index meal rows after deletion
+            function reindexMealRows() {
+                $('.meal-row').each(function(index) {
+                    $(this).data('index', index);
+                    $(this).attr('data-index', index);
+                });
+            }
+
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
         });
     </script>
     <script src="sort.js"></script>
