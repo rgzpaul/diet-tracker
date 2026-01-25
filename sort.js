@@ -60,8 +60,8 @@ function makeTablesSortable(tableSelector = 'table') {
   });
 }
 
-// Sort meal buttons by color on load
-const mealContainer = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-3.gap-4');
+// Sort meal buttons by shade on load (darker shades first)
+const mealContainer = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-3.gap-3');
 if (mealContainer) {
   const forms = Array.from(mealContainer.querySelectorAll('.meal-form'));
   forms.sort((a, b) => {
@@ -70,19 +70,19 @@ if (mealContainer) {
 
     // Extract color class from class list
     const colorA = Array.from(buttonA.classList).find(cls =>
-      cls.startsWith('bg-') && !cls.includes('hover'));
+      cls.startsWith('bg-stone-') && !cls.includes('hover'));
     const colorB = Array.from(buttonB.classList).find(cls =>
-      cls.startsWith('bg-') && !cls.includes('hover'));
+      cls.startsWith('bg-stone-') && !cls.includes('hover'));
 
-    // Define color order
+    // Define color order (darker shades first)
     const colorOrder = {
-      'bg-green-800': 1,
-      'bg-blue-600': 2,
-      'bg-amber-800': 3,
-      'bg-orange-600': 4
+      'bg-stone-800': 1,
+      'bg-stone-700': 2,
+      'bg-stone-600': 3,
+      'bg-stone-500': 4
     };
 
-    return colorOrder[colorA] - colorOrder[colorB];
+    return (colorOrder[colorA] || 5) - (colorOrder[colorB] || 5);
   });
 
   forms.forEach(form => {
