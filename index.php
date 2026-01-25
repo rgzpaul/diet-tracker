@@ -504,7 +504,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             `;
 
                             // Insert before totals row
-                            const $totalsRow = $('tbody tr.bg-stone-50');
+                            const $totalsRow = $('tbody tr.bg-stone-100');
                             $(newRow).insertBefore($totalsRow).animate({opacity: 1}, 200);
 
                             // Update totals
@@ -561,7 +561,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                                     </td>
                                                 </tr>
                                             `;
-                                            $(emptyRow).insertBefore($('tbody tr.bg-stone-50'));
+                                            $(emptyRow).insertBefore($('tbody tr.bg-stone-100'));
                                             lucide.createIcons();
                                         }
                                     });
@@ -580,7 +580,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
 
             // Function to update totals
             function updateTotals(totals) {
-                const $totalsRow = $('tbody tr.bg-stone-50');
+                const $totalsRow = $('tbody tr.bg-stone-100');
                 $totalsRow.find('td:eq(1)').text(totals.kcal);
                 $totalsRow.find('td:eq(2)').text(totals.protein);
                 $totalsRow.find('td:eq(3)').text(totals.carbs);
