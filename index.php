@@ -16,14 +16,14 @@ if (!file_exists($mealsFile)) {
             'protein' => 10,
             'carbs' => 50,
             'fat' => 5,
-            'color' => 'blue'
+            'color' => 'green'
         ],
         [
             'name' => 'Chicken Salad',
             'protein' => 30,
             'carbs' => 15,
             'fat' => 18,
-            'color' => 'green'
+            'color' => 'blue'
         ],
         [
             'name' => 'Protein Shake',
@@ -160,62 +160,81 @@ $displayDate = date('D d/m');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meal Tracker</title>
-    <!-- Manifest and Icons for PWA -->
     <link rel="manifest" href="./manifest.json">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .meal-button {
+            transition: all 0.15s ease;
+        }
         .meal-button:hover {
-            transform: scale(1.05);
-            transition: transform 0.2s;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .meal-button:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
-    <div class="max-w-3xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-8 text-blue-700">Daily Meal Tracker</h1>
+<body class="bg-stone-100 min-h-screen">
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex items-center justify-center gap-3 mb-8">
+            <i data-lucide="utensils" class="w-7 h-7 text-stone-700"></i>
+            <h1 class="text-2xl font-semibold text-stone-800">Daily Tracker</h1>
+        </div>
 
         <!-- Today's Meals Table -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-center"><?php echo strtoupper($displayDate); ?></h2>
+        <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="calendar" class="w-5 h-5 text-stone-500"></i>
+                <h2 class="text-lg font-medium text-stone-700"><?php echo strtoupper($displayDate); ?></h2>
+            </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
+                <table class="w-full">
                     <thead>
-                        <tr class="bg-blue-100">
-                            <th class="border p-2 text-left">Meal</th>
-                            <th class="border p-2 text-center">K</th>
-                            <th class="border p-2 text-center">P</th>
-                            <th class="border p-2 text-center">C</th>
-                            <th class="border p-2 text-center">F</th>
+                        <tr class="border-b border-stone-200">
+                            <th class="pb-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">K</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">P</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">C</th>
+                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">F</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($todaysMeals)): ?>
                             <tr>
-                                <td colspan="5" class="border p-4 text-center text-gray-500">No meals added today</td>
+                                <td colspan="5" class="py-8 text-center text-stone-400">
+                                    <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                                    <p>No meals added today</p>
+                                </td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($todaysMeals as $index => $meal): ?>
                                 <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
-                                <tr class="hover:bg-gray-50 meal-row cursor-pointer" data-index="<?php echo $index; ?>">
-                                    <td class="border p-2"><?php echo htmlspecialchars($meal['name']); ?></td>
-                                    <td class="border p-2 text-center"><?php echo $mealKcal; ?></td>
-                                    <td class="border p-2 text-center"><?php echo $meal['protein']; ?></td>
-                                    <td class="border p-2 text-center"><?php echo $meal['carbs']; ?></td>
-                                    <td class="border p-2 text-center"><?php echo $meal['fat']; ?></td>
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="<?php echo $index; ?>">
+                                    <td class="py-3 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
+                                    <td class="py-3 text-center text-stone-600 font-medium"><?php echo $mealKcal; ?></td>
+                                    <td class="py-3 text-center text-stone-500"><?php echo $meal['protein']; ?></td>
+                                    <td class="py-3 text-center text-stone-500"><?php echo $meal['carbs']; ?></td>
+                                    <td class="py-3 text-center text-stone-500"><?php echo $meal['fat']; ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
 
                         <!-- Totals Row -->
-                        <tr class="bg-blue-50 font-bold">
-                            <td class="border p-2">TOTAL</td>
-                            <td class="border p-2 text-center"><?php echo $totalKcal; ?></td>
-                            <td class="border p-2 text-center"><?php echo $totalProtein; ?></td>
-                            <td class="border p-2 text-center"><?php echo $totalCarbs; ?></td>
-                            <td class="border p-2 text-center"><?php echo $totalFat; ?></td>
+                        <tr class="bg-stone-50">
+                            <td class="py-3 font-semibold text-stone-800">Total</td>
+                            <td class="py-3 text-center font-semibold text-stone-800"><?php echo $totalKcal; ?></td>
+                            <td class="py-3 text-center font-medium text-stone-600"><?php echo $totalProtein; ?></td>
+                            <td class="py-3 text-center font-medium text-stone-600"><?php echo $totalCarbs; ?></td>
+                            <td class="py-3 text-center font-medium text-stone-600"><?php echo $totalFat; ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -223,40 +242,40 @@ $displayDate = date('D d/m');
         </div>
 
         <!-- Meal Buttons -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Add a Meal</h2>
+        <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-stone-500"></i>
+                <h2 class="text-lg font-medium text-stone-700">Add Meal</h2>
+            </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <?php foreach ($meals as $meal): ?>
                     <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
                     <form method="post" class="meal-form">
                         <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
                         <button type="submit" name="add_meal"
-                            class="meal-button h-full w-full 
+                            class="meal-button h-full w-full
                             <?php
-                            $buttonColor = isset($meal['color']) ? $meal['color'] : 'blue';
+                            $buttonColor = isset($meal['color']) ? $meal['color'] : 'grey';
                             switch ($buttonColor) {
                                 case 'brown':
-                                    echo 'bg-amber-800 hover:bg-amber-900';
+                                    echo 'bg-stone-600 hover:bg-stone-700';
                                     break;
                                 case 'green':
-                                    echo 'bg-green-800 hover:bg-green-900';
+                                    echo 'bg-stone-700 hover:bg-stone-800';
                                     break;
                                 case 'orange':
-                                    echo 'bg-orange-600 hover:bg-orange-700';
+                                    echo 'bg-stone-500 hover:bg-stone-600';
                                     break;
                                 case 'blue':
                                 default:
-                                    echo 'bg-blue-600 hover:bg-blue-700';
+                                    echo 'bg-stone-800 hover:bg-stone-900';
                                     break;
                             }
-                            ?> text-white font-medium py-3 px-4 rounded-lg text-center">
-                            <div class="font-bold"><?php echo htmlspecialchars($meal['name']); ?></div>
-                            <div class="text-sm mt-1">
-                                <?php echo $mealKcal; ?> kcal |
-                                P: <?php echo $meal['protein']; ?>g |
-                                C: <?php echo $meal['carbs']; ?>g |
-                                F: <?php echo $meal['fat']; ?>g
+                            ?> text-white py-3 px-3 rounded-lg text-left">
+                            <div class="font-medium text-sm"><?php echo htmlspecialchars($meal['name']); ?></div>
+                            <div class="text-xs mt-1 opacity-80">
+                                <?php echo $mealKcal; ?> kcal
                             </div>
                         </button>
                     </form>
@@ -265,12 +284,14 @@ $displayDate = date('D d/m');
         </div>
 
         <!-- Navigation Links -->
-        <div class="text-center mb-8">
-            <a href="report.php" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 mx-2 rounded-lg text-center">
-                Weekly Report
+        <div class="flex justify-center gap-3">
+            <a href="report.php" class="inline-flex items-center gap-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                Report
             </a>
-            <a href="create.php" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 mx-2 rounded-lg text-center">
-                Manage Meals
+            <a href="create.php" class="inline-flex items-center gap-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                Manage
             </a>
         </div>
     </div>
@@ -282,10 +303,12 @@ $displayDate = date('D d/m');
     </form>
 
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
         $(document).ready(function() {
             $('.meal-form').on('submit', function() {
-                // Add a loading state or animation if desired
-                $(this).find('button').addClass('bg-blue-800').text('Adding...');
+                $(this).find('button').addClass('opacity-50').prop('disabled', true);
             });
 
             // Click event for meal rows

@@ -206,74 +206,88 @@ usort($meals, function ($a, $b) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Meals - Meal Tracker</title>
-    <!-- Manifest and Icons for PWA -->
     <link rel="manifest" href="./manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="/train/icon.png">
-    <meta name="theme-color" content="#1a73e8">
+    <meta name="theme-color" content="#57534e">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
-    <div class="max-w-3xl mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-8 text-purple-700">Manage Meals</h1>
+<body class="bg-stone-100 min-h-screen">
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex items-center justify-center gap-3 mb-8">
+            <i data-lucide="chef-hat" class="w-7 h-7 text-stone-700"></i>
+            <h1 class="text-2xl font-semibold text-stone-800">Manage Meals</h1>
+        </div>
 
         <!-- Message Display -->
         <?php if (!empty($message)): ?>
-            <div class="mb-6 p-4 rounded-lg <?php echo $messageType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'; ?>">
-                <?php echo $message; ?>
+            <div class="mb-6 p-4 rounded-lg flex items-center gap-3 <?php echo $messageType === 'success' ? 'bg-stone-200 text-stone-700' : 'bg-red-50 text-red-700'; ?>">
+                <i data-lucide="<?php echo $messageType === 'success' ? 'check-circle' : 'alert-circle'; ?>" class="w-5 h-5 flex-shrink-0"></i>
+                <span><?php echo $message; ?></span>
             </div>
         <?php endif; ?>
 
         <!-- Add New Meal Form -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Add New Meal</h2>
+        <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="plus" class="w-5 h-5 text-stone-500"></i>
+                <h2 class="text-lg font-medium text-stone-700">Add New Meal</h2>
+            </div>
 
             <form method="post" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Meal Name</label>
+                        <label for="name" class="block text-sm font-medium text-stone-600 mb-1.5">Meal Name</label>
                         <input type="text" id="name" name="name" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                            class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label for="protein" class="block text-sm font-medium text-gray-700 mb-1">P</label>
+                            <label for="protein" class="block text-sm font-medium text-stone-600 mb-1.5">Protein</label>
                             <input type="number" id="protein" name="protein" min="0" step="0.1" required value="0"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         </div>
 
                         <div>
-                            <label for="carbs" class="block text-sm font-medium text-gray-700 mb-1">C</label>
+                            <label for="carbs" class="block text-sm font-medium text-stone-600 mb-1.5">Carbs</label>
                             <input type="number" id="carbs" name="carbs" min="0" step="0.1" required value="0"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         </div>
 
                         <div>
-                            <label for="fat" class="block text-sm font-medium text-gray-700 mb-1">F</label>
+                            <label for="fat" class="block text-sm font-medium text-stone-600 mb-1.5">Fat</label>
                             <input type="number" id="fat" name="fat" min="0" step="0.1" required value="0"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Button Color</label>
+                    <label for="color" class="block text-sm font-medium text-stone-600 mb-1.5">Category</label>
                     <select id="color" name="color"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                        <option value="blue">Blue</option>
-                        <option value="brown">Brown</option>
-                        <option value="green">Dark Green</option>
-                        <option value="orange">Orange</option>
+                        class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
+                        <option value="blue">Protein-rich</option>
+                        <option value="green">Vegetables</option>
+                        <option value="brown">Snacks</option>
+                        <option value="orange">Mixed</option>
                     </select>
                 </div>
 
                 <div class="flex justify-between items-center pt-2">
-                    <div class="text-sm kcal-preview text-gray-600">
-                        Estimated calories: <span id="estimated-kcal">0</span> kcal
+                    <div class="text-sm text-stone-500 flex items-center gap-2">
+                        <i data-lucide="flame" class="w-4 h-4"></i>
+                        <span id="estimated-kcal">0</span> kcal
                     </div>
-                    <button type="submit" name="add_meal" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                    <button type="submit" name="add_meal" class="inline-flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 transition-colors">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
                         Add Meal
                     </button>
                 </div>
@@ -281,53 +295,55 @@ usort($meals, function ($a, $b) {
         </div>
 
         <!-- Existing Meals -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Existing Meals</h2>
+        <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i data-lucide="list" class="w-5 h-5 text-stone-500"></i>
+                <h2 class="text-lg font-medium text-stone-700">Existing Meals</h2>
+            </div>
 
             <?php if (empty($meals)): ?>
-                <p class="text-gray-500 text-center py-4">No meals have been added yet.</p>
+                <div class="py-8 text-center text-stone-400">
+                    <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+                    <p>No meals have been added yet</p>
+                </div>
             <?php else: ?>
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse">
+                    <table class="w-full">
                         <thead>
-                            <tr class="bg-gray-100">
-                                <th class="border p-2 text-left">Meal Name</th>
-                                <th class="border p-2 text-center">K</th>
-                                <th class="border p-2 text-center">P</th>
-                                <th class="border p-2 text-center">C</th>
-                                <th class="border p-2 text-center">F</th>
-                                <th class="border p-2 text-center">Color</th>
-                                <th class="border p-2 text-center">Actions</th>
+                            <tr class="border-b border-stone-200">
+                                <th class="pb-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
+                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">K</th>
+                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">P</th>
+                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">C</th>
+                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">F</th>
+                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($meals as $meal): ?>
                                 <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="border p-2"><?php echo htmlspecialchars($meal['name']); ?></td>
-                                    <td class="border p-2 text-center"><?php echo $mealKcal; ?></td>
-                                    <td class="border p-2 text-center"><?php echo $meal['protein']; ?></td>
-                                    <td class="border p-2 text-center"><?php echo $meal['carbs']; ?></td>
-                                    <td class="border p-2 text-center"><?php echo $meal['fat']; ?></td>
-                                    <td class="border p-2 text-center">
-                                        <span class="inline-block w-6 h-6 rounded-full" style="background-color: <?php echo isset($meal['color']) ? $meal['color'] : 'blue'; ?>"></span>
-                                    </td>
-                                    <td class="border p-2 text-center">
-                                        <div class="flex justify-center space-x-2">
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
+                                    <td class="py-3 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
+                                    <td class="py-3 text-center text-stone-600 font-medium"><?php echo $mealKcal; ?></td>
+                                    <td class="py-3 text-center text-stone-500"><?php echo $meal['protein']; ?></td>
+                                    <td class="py-3 text-center text-stone-500"><?php echo $meal['carbs']; ?></td>
+                                    <td class="py-3 text-center text-stone-500"><?php echo $meal['fat']; ?></td>
+                                    <td class="py-3 text-center">
+                                        <div class="flex justify-center gap-1">
                                             <button type="button"
-                                                class="edit-meal-btn px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                                                class="edit-meal-btn p-2 text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                                                 data-name="<?php echo htmlspecialchars($meal['name']); ?>"
                                                 data-protein="<?php echo $meal['protein']; ?>"
                                                 data-carbs="<?php echo $meal['carbs']; ?>"
                                                 data-fat="<?php echo $meal['fat']; ?>"
                                                 data-color="<?php echo isset($meal['color']) ? $meal['color'] : 'blue'; ?>">
-                                                Edit
+                                                <i data-lucide="pencil" class="w-4 h-4"></i>
                                             </button>
 
-                                            <form method="post" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this meal?');">
+                                            <form method="post" class="delete-form inline" onsubmit="return confirm('Are you sure you want to delete this meal?');">
                                                 <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
-                                                <button type="submit" name="delete_meal" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
-                                                    Delete
+                                                <button type="submit" name="delete_meal" class="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                                 </button>
                                             </form>
                                         </div>
@@ -341,80 +357,88 @@ usort($meals, function ($a, $b) {
         </div>
 
         <!-- Edit Meal Modal -->
-        <div id="edit-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-                <h3 class="text-lg font-semibold mb-4">Edit Meal</h3>
+        <div id="edit-modal" class="fixed inset-0 bg-stone-900/50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-xl border border-stone-200 p-6 w-full max-w-md mx-4">
+                <div class="flex items-center gap-2 mb-4">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-stone-500"></i>
+                    <h3 class="text-lg font-medium text-stone-700">Edit Meal</h3>
+                </div>
 
                 <form method="post" class="space-y-4">
                     <input type="hidden" id="edit-old-name" name="old_name">
 
                     <div>
-                        <label for="edit-name" class="block text-sm font-medium text-gray-700 mb-1">Meal Name</label>
+                        <label for="edit-name" class="block text-sm font-medium text-stone-600 mb-1.5">Meal Name</label>
                         <input type="text" id="edit-name" name="name" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                            class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label for="edit-protein" class="block text-sm font-medium text-gray-700 mb-1">P</label>
+                            <label for="edit-protein" class="block text-sm font-medium text-stone-600 mb-1.5">P</label>
                             <input type="number" id="edit-protein" name="protein" min="0" step="0.1" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         </div>
 
                         <div>
-                            <label for="edit-carbs" class="block text-sm font-medium text-gray-700 mb-1">C</label>
+                            <label for="edit-carbs" class="block text-sm font-medium text-stone-600 mb-1.5">C</label>
                             <input type="number" id="edit-carbs" name="carbs" min="0" step="0.1" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         </div>
 
                         <div>
-                            <label for="edit-fat" class="block text-sm font-medium text-gray-700 mb-1">F</label>
+                            <label for="edit-fat" class="block text-sm font-medium text-stone-600 mb-1.5">F</label>
                             <input type="number" id="edit-fat" name="fat" min="0" step="0.1" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
                         </div>
                     </div>
 
                     <div>
-                        <label for="edit-color" class="block text-sm font-medium text-gray-700 mb-1">Button Color</label>
+                        <label for="edit-color" class="block text-sm font-medium text-stone-600 mb-1.5">Category</label>
                         <select id="edit-color" name="color"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500">
-                            <option value="blue">Blue</option>
-                            <option value="brown">Brown</option>
-                            <option value="green">Dark Green</option>
-                            <option value="orange">Orange</option>
+                            class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
+                            <option value="blue">Protein-rich</option>
+                            <option value="green">Vegetables</option>
+                            <option value="brown">Snacks</option>
+                            <option value="orange">Mixed</option>
                         </select>
                     </div>
 
-                    <div class="flex justify-between items-center pt-2">
-                        <div class="text-sm edit-kcal-preview text-gray-600">
-                            Estimated calories: <span id="edit-estimated-kcal">0</span> kcal
-                        </div>
+                    <div class="text-sm text-stone-500 flex items-center gap-2">
+                        <i data-lucide="flame" class="w-4 h-4"></i>
+                        <span id="edit-estimated-kcal">0</span> kcal
                     </div>
 
-                    <div class="flex justify-end space-x-2 pt-2">
-                        <button type="button" id="close-modal" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" id="close-modal" class="px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-400 transition-colors">
                             Cancel
                         </button>
-                        <button type="submit" name="update_meal" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Update Meal
+                        <button type="submit" name="update_meal" class="inline-flex items-center gap-2 px-4 py-2 bg-stone-800 text-white rounded-lg hover:bg-stone-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500 transition-colors">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            Update
                         </button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Back to Home Link -->
-        <div class="text-center mt-6">
-            <a href="index.php" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 mx-2 rounded-lg text-center">
-                Daily Tracker
+        <!-- Navigation Links -->
+        <div class="flex justify-center gap-3">
+            <a href="index.php" class="inline-flex items-center gap-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                <i data-lucide="utensils" class="w-4 h-4"></i>
+                Tracker
             </a>
-            <a href="report.php" class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 mx-2 rounded-lg text-center">
-                Weekly Report
+            <a href="report.php" class="inline-flex items-center gap-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                Report
             </a>
         </div>
     </div>
 
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
         $(document).ready(function() {
             // Calculate estimated KCAL for new meal form
             function updateEstimatedKcal() {
@@ -461,6 +485,8 @@ usort($meals, function ($a, $b) {
                 updateEditEstimatedKcal();
 
                 $('#edit-modal').removeClass('hidden');
+                // Re-initialize icons for modal
+                lucide.createIcons();
             });
 
             // Close modal
