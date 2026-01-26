@@ -215,21 +215,27 @@ if ($isAjax) {
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-stone-50 p-3 rounded-lg flex items-center gap-3">
-                    <i data-lucide="calendar-check" class="w-5 h-5 text-stone-500"></i>
+                    <div class="p-2 bg-stone-100 rounded-lg">
+                        <i data-lucide="calendar-check" class="w-5 h-5 text-stone-500"></i>
+                    </div>
                     <div>
                         <div class="text-xs text-stone-500">Days Tracked</div>
                         <div id="days-tracked" class="font-semibold text-stone-800"><?php echo $weeklySummary['daysTracked']; ?> / 7</div>
                     </div>
                 </div>
                 <div class="bg-stone-50 p-3 rounded-lg flex items-center gap-3">
-                    <i data-lucide="flame" class="w-5 h-5 text-stone-500"></i>
+                    <div class="p-2 bg-stone-100 rounded-lg">
+                        <i data-lucide="flame" class="w-5 h-5 text-stone-500"></i>
+                    </div>
                     <div>
                         <div class="text-xs text-stone-500">Total Calories</div>
                         <div id="total-kcal" class="font-semibold text-stone-800"><?php echo number_format($weeklySummary['totalKcal']); ?></div>
                     </div>
                 </div>
                 <div class="bg-stone-50 p-3 rounded-lg flex items-center gap-3">
-                    <i data-lucide="beef" class="w-5 h-5 text-stone-500"></i>
+                    <div class="p-2 bg-stone-100 rounded-lg">
+                        <i data-lucide="beef" class="w-5 h-5 text-stone-500"></i>
+                    </div>
                     <div>
                         <div class="text-xs text-stone-500">Total Protein</div>
                         <div id="total-protein" class="font-semibold text-stone-800"><?php echo $weeklySummary['totalProtein']; ?>g</div>
