@@ -1,4 +1,4 @@
-# Diet Tracker
+# Meal Tracker
 
 A simple web-based meal tracking application for monitoring daily food intake and macronutrients.
 
