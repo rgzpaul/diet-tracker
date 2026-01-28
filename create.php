@@ -266,7 +266,7 @@ usort($meals, function ($a, $b) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings</title>
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.php">
     <meta name="theme-color" content="#57534e">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
