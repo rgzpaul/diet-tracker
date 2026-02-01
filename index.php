@@ -342,7 +342,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         th, td {
-            padding: 0.75rem 0.5rem;
+            padding: 6px 10px;
             white-space: nowrap;
         }
         .meal-button {
