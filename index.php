@@ -351,6 +351,12 @@ $displayDate = date('D d/m', strtotime($selectedDate));
         .meal-button:active {
             transform: translateY(0);
         }
+        .meal-row {
+            transition: background-color 0.5s ease;
+        }
+        .meal-row.highlight {
+            background-color: #fef3c7 !important;
+        }
     </style>
 </head>
 
@@ -597,7 +603,8 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                 $existingRow.data('count', response.groupCount);
                                 $existingRow.attr('data-count', response.groupCount);
                                 // Flash animation to show update
-                                $existingRow.css('background-color', '#fef3c7').animate({backgroundColor: 'transparent'}, 500);
+                                $existingRow.addClass('highlight');
+                                setTimeout(() => $existingRow.removeClass('highlight'), 500);
                             } else {
                                 // Create new meal row
                                 const newRow = `
@@ -686,7 +693,8 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                         $row.data('count', newCount);
                                         $row.attr('data-count', newCount);
                                         // Flash animation to show update
-                                        $row.css('background-color', '#fef3c7').animate({backgroundColor: 'transparent'}, 500);
+                                        $row.addClass('highlight');
+                                        setTimeout(() => $row.removeClass('highlight'), 500);
                                     }
                                 }
                             },
