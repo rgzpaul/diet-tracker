@@ -341,6 +341,9 @@ $displayDate = date('D d/m', strtotime($selectedDate));
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
+        td {
+            white-space: nowrap;
+        }
         .meal-button {
             transition: all 0.15s ease;
         }
