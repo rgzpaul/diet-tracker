@@ -386,11 +386,11 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-stone-200">
-                            <th class=text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
-                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
-                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
-                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
-                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
+                            <th class="text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
+                            <th class="text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
+                            <th class="text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
+                            <th class="text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
+                            <th class="text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
                         </tr>
                     </thead>
                     <tbody>
