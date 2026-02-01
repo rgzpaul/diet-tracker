@@ -428,7 +428,7 @@ usort($meals, function ($a, $b) {
                                     <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
                                     <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
                                     <td class=text-center border-l border-stone-100">
-                                        <div class="flex max-sm:flex-col itens-center justify-center gap-1">
+                                        <div class="flex itens-center justify-center gap-1">
                                             <button type="button"
                                                 class="edit-meal-btn p-2 flex justify-center text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                                                 data-name="<?php echo htmlspecialchars($meal['name']); ?>"
@@ -781,7 +781,7 @@ usort($meals, function ($a, $b) {
                         <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
                         <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
                         <td class=text-center border-l border-stone-100">
-                            <div class="flex max-sm:flex-col itens-center justify-center gap-1">
+                            <div class="flex itens-center justify-center gap-1">
                                 <button type="button"
                                     class="edit-meal-btn p-2 flex justify-center text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                                     data-name="${escapeHtml(meal.name)}"
