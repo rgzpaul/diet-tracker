@@ -443,30 +443,30 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
                             <input type="hidden" name="target_date" value="<?php echo $selectedDate; ?>">
                             <button type="submit" name="add_meal"
-                                class="meal-button h-full w-full
+                                class="meal-button h-full w-full bg-stone-50 hover:bg-stone-100 border-2
                                 <?php
                                 $buttonColor = isset($meal['color']) ? $meal['color'] : 'orange';
                                 switch ($buttonColor) {
                                     case 'yellow':
-                                        echo 'bg-yellow-500 hover:bg-yellow-600';
+                                        echo 'border-yellow-500';
                                         break;
                                     case 'amber':
-                                        echo 'bg-amber-500 hover:bg-amber-600';
+                                        echo 'border-amber-500';
                                         break;
                                     case 'orange':
                                     default:
-                                        echo 'bg-orange-500 hover:bg-orange-600';
+                                        echo 'border-orange-500';
                                         break;
                                 }
-                                ?> text-white py-3 px-3 rounded-lg text-left pr-8">
+                                ?> text-stone-700 py-3 px-3 rounded-lg text-left pr-8">
                                 <div class="font-medium text-sm"><?php echo htmlspecialchars($meal['name']); ?></div>
-                                <div class="text-xs mt-1 opacity-80">
+                                <div class="text-xs mt-1 text-stone-500">
                                     <?php echo $mealKcal; ?> kcal
                                 </div>
                             </button>
                         </form>
                         <button type="button"
-                            class="info-btn absolute top-2 right-2 p-1 text-white/70 hover:text-white hover:bg-white/20 rounded transition-colors"
+                            class="info-btn absolute top-2 right-2 p-1 text-stone-400 hover:text-stone-600 hover:bg-stone-200 rounded transition-colors"
                             data-name="<?php echo htmlspecialchars($meal['name']); ?>"
                             data-description="<?php echo htmlspecialchars(isset($meal['description']) ? $meal['description'] : ''); ?>"
                             title="View description">
