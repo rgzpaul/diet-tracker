@@ -73,15 +73,15 @@ if (mealContainer) {
 
     // Extract color class from class list
     const colorA = Array.from(buttonA.classList).find(cls =>
-      (cls.startsWith('bg-orange-') || cls.startsWith('bg-amber-') || cls.startsWith('bg-yellow-')) && !cls.includes('hover'));
+      cls.startsWith('border-orange-') || cls.startsWith('border-amber-') || cls.startsWith('border-yellow-'));
     const colorB = Array.from(buttonB.classList).find(cls =>
-      (cls.startsWith('bg-orange-') || cls.startsWith('bg-amber-') || cls.startsWith('bg-yellow-')) && !cls.includes('hover'));
+      cls.startsWith('border-orange-') || cls.startsWith('border-amber-') || cls.startsWith('border-yellow-'));
 
     // Define color order (darker shades first)
     const colorOrder = {
-      'bg-orange-500': 1,
-      'bg-amber-500': 2,
-      'bg-yellow-500': 3
+      'border-orange-500': 1,
+      'border-amber-500': 2,
+      'border-yellow-500': 3
     };
 
     return (colorOrder[colorA] || 5) - (colorOrder[colorB] || 5);
