@@ -138,17 +138,26 @@ if (isset($_POST['add_meal'])) {
                 $totalFat += $m['fat'];
             }
 
+            // Round values for JSON response
+            $newMealRounded = [
+                'name' => $newMeal['name'],
+                'protein' => round($newMeal['protein'], 2),
+                'carbs' => round($newMeal['carbs'], 2),
+                'fat' => round($newMeal['fat'], 2),
+                'color' => isset($newMeal['color']) ? $newMeal['color'] : 'blue'
+            ];
+
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => true,
-                'meal' => $newMeal,
-                'mealKcal' => calculateKcal($newMeal['protein'], $newMeal['carbs'], $newMeal['fat']),
+                'meal' => $newMealRounded,
+                'mealKcal' => round(calculateKcal($newMeal['protein'], $newMeal['carbs'], $newMeal['fat']), 2),
                 'mealIndex' => count($dateMeals) - 1,
                 'totals' => [
-                    'kcal' => $totalKcal,
-                    'protein' => $totalProtein,
-                    'carbs' => $totalCarbs,
-                    'fat' => $totalFat
+                    'kcal' => round($totalKcal, 2),
+                    'protein' => round($totalProtein, 2),
+                    'carbs' => round($totalCarbs, 2),
+                    'fat' => round($totalFat, 2)
                 ]
             ]);
             exit;
@@ -197,10 +206,10 @@ if (isset($_POST['delete_today_meal'])) {
             echo json_encode([
                 'success' => true,
                 'totals' => [
-                    'kcal' => $totalKcal,
-                    'protein' => $totalProtein,
-                    'carbs' => $totalCarbs,
-                    'fat' => $totalFat
+                    'kcal' => round($totalKcal, 2),
+                    'protein' => round($totalProtein, 2),
+                    'carbs' => round($totalCarbs, 2),
+                    'fat' => round($totalFat, 2)
                 ],
                 'mealsCount' => count($dateMeals)
             ]);
@@ -303,13 +312,13 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             </tr>
                         <?php else: ?>
                             <?php foreach ($selectedDateMeals as $index => $meal): ?>
-                                <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
+                                <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="<?php echo $index; ?>" data-name="<?php echo htmlspecialchars($meal['name']); ?>">
                                     <td class="py-3 px-1 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
                                     <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['protein']; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['carbs']; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['fat']; ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -317,10 +326,10 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                         <!-- Totals Row -->
                         <tr class="bg-stone-100">
                             <td class="py-3 px-1 font-semibold text-stone-800">Total</td>
-                            <td class="py-3 px-1 text-center font-semibold text-stone-800 border-l border-stone-100"><?php echo $totalKcal; ?></td>
-                            <td class="py-3 px-1 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo $totalProtein; ?></td>
-                            <td class="py-3 px-1 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo $totalCarbs; ?></td>
-                            <td class="py-3 px-1 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo $totalFat; ?></td>
+                            <td class="py-3 px-1 text-center font-semibold text-stone-800 border-l border-stone-100"><?php echo round($totalKcal, 2); ?></td>
+                            <td class="py-3 px-1 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalProtein, 2); ?></td>
+                            <td class="py-3 px-1 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalCarbs, 2); ?></td>
+                            <td class="py-3 px-1 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalFat, 2); ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -336,7 +345,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
 
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <?php foreach ($meals as $meal): ?>
-                    <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
+                    <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
                     <div class="relative">
                         <form method="post" class="meal-form h-full">
                             <input type="hidden" name="meal_name" value="<?php echo htmlspecialchars($meal['name']); ?>">
@@ -496,10 +505,10 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             const newRow = `
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="${response.mealIndex}" data-name="${escapeHtml(response.meal.name)}" style="opacity: 0;">
                                     <td class="py-3 px-1 text-stone-700">${escapeHtml(response.meal.name)}</td>
-                                    <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${response.mealKcal}</td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${response.meal.protein}</td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${response.meal.carbs}</td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${response.meal.fat}</td>
+                                    <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(response.mealKcal)}</td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.protein)}</td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.carbs)}</td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.fat)}</td>
                                 </tr>
                             `;
 
@@ -583,10 +592,10 @@ $displayDate = date('D d/m', strtotime($selectedDate));
             // Function to update totals
             function updateTotals(totals) {
                 const $totalsRow = $('tbody tr.bg-stone-100');
-                $totalsRow.find('td:eq(1)').text(totals.kcal);
-                $totalsRow.find('td:eq(2)').text(totals.protein);
-                $totalsRow.find('td:eq(3)').text(totals.carbs);
-                $totalsRow.find('td:eq(4)').text(totals.fat);
+                $totalsRow.find('td:eq(1)').text(formatNumber(totals.kcal));
+                $totalsRow.find('td:eq(2)').text(formatNumber(totals.protein));
+                $totalsRow.find('td:eq(3)').text(formatNumber(totals.carbs));
+                $totalsRow.find('td:eq(4)').text(formatNumber(totals.fat));
             }
 
             // Function to re-index meal rows after deletion
@@ -602,6 +611,11 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
+            }
+
+            // Helper function to format number to max 2 decimal places
+            function formatNumber(num) {
+                return parseFloat(parseFloat(num).toFixed(2));
             }
 
             // Info button click (show description)

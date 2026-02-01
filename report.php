@@ -96,6 +96,12 @@ for ($i = 0; $i < 7; $i++) {
             $dayData['totals']['fat'] += $meal['fat'];
         }
 
+        // Round day totals to 2 decimal places
+        $dayData['totals']['kcal'] = round($dayData['totals']['kcal'], 2);
+        $dayData['totals']['protein'] = round($dayData['totals']['protein'], 2);
+        $dayData['totals']['carbs'] = round($dayData['totals']['carbs'], 2);
+        $dayData['totals']['fat'] = round($dayData['totals']['fat'], 2);
+
         // Add to weekly totals
         $weeklySummary['totalKcal'] += $dayData['totals']['kcal'];
         $weeklySummary['totalProtein'] += $dayData['totals']['protein'];
@@ -109,18 +115,27 @@ for ($i = 0; $i < 7; $i++) {
 
 // Calculate averages (only for days that have data)
 if ($weeklySummary['daysTracked'] > 0) {
-    $weeklySummary['avgKcal'] = round($weeklySummary['totalKcal'] / $weeklySummary['daysTracked']);
-    $weeklySummary['avgProtein'] = round($weeklySummary['totalProtein'] / $weeklySummary['daysTracked'], 1);
-    $weeklySummary['avgCarbs'] = round($weeklySummary['totalCarbs'] / $weeklySummary['daysTracked'], 1);
-    $weeklySummary['avgFat'] = round($weeklySummary['totalFat'] / $weeklySummary['daysTracked'], 1);
+    $weeklySummary['avgKcal'] = round($weeklySummary['totalKcal'] / $weeklySummary['daysTracked'], 2);
+    $weeklySummary['avgProtein'] = round($weeklySummary['totalProtein'] / $weeklySummary['daysTracked'], 2);
+    $weeklySummary['avgCarbs'] = round($weeklySummary['totalCarbs'] / $weeklySummary['daysTracked'], 2);
+    $weeklySummary['avgFat'] = round($weeklySummary['totalFat'] / $weeklySummary['daysTracked'], 2);
 }
+
+// Round weekly totals
+$weeklySummary['totalKcal'] = round($weeklySummary['totalKcal'], 2);
+$weeklySummary['totalProtein'] = round($weeklySummary['totalProtein'], 2);
+$weeklySummary['totalCarbs'] = round($weeklySummary['totalCarbs'], 2);
+$weeklySummary['totalFat'] = round($weeklySummary['totalFat'], 2);
 
 // Return JSON for AJAX requests
 if ($isAjax) {
-    // Add kcal to each meal in weekDays
+    // Add kcal to each meal in weekDays and round values
     foreach ($weekDays as &$day) {
         foreach ($day['meals'] as &$meal) {
-            $meal['kcal'] = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']);
+            $meal['kcal'] = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2);
+            $meal['protein'] = round($meal['protein'], 2);
+            $meal['carbs'] = round($meal['carbs'], 2);
+            $meal['fat'] = round($meal['fat'], 2);
         }
     }
 
@@ -309,13 +324,13 @@ if ($isAjax) {
                                         </thead>
                                         <tbody>
                                             <?php foreach ($day['meals'] as $meal): ?>
-                                                <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
+                                                <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
                                                 <tr class="border-t border-stone-100">
                                                     <td class="py-2 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
                                                     <td class="py-2 text-center text-stone-600 border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['protein']; ?></td>
-                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['carbs']; ?></td>
-                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['fat']; ?></td>
+                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
+                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
+                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -417,15 +432,20 @@ if ($isAjax) {
                 });
             }
 
+            // Helper function to format number to max 2 decimal places
+            function formatNumber(num) {
+                return parseFloat(num.toFixed(2));
+            }
+
             // Update summary section
             function updateSummary(summary) {
-                $('#avg-kcal').text(summary.avgKcal);
-                $('#avg-protein').text(summary.avgProtein + 'g');
-                $('#avg-carbs').text(summary.avgCarbs + 'g');
-                $('#avg-fat').text(summary.avgFat + 'g');
+                $('#avg-kcal').text(formatNumber(summary.avgKcal));
+                $('#avg-protein').text(formatNumber(summary.avgProtein) + 'g');
+                $('#avg-carbs').text(formatNumber(summary.avgCarbs) + 'g');
+                $('#avg-fat').text(formatNumber(summary.avgFat) + 'g');
                 $('#days-tracked').text(summary.daysTracked + ' / 7');
-                $('#total-kcal').text(summary.totalKcal.toLocaleString());
-                $('#total-protein').text(summary.totalProtein + 'g');
+                $('#total-kcal').text(formatNumber(summary.totalKcal).toLocaleString());
+                $('#total-protein').text(formatNumber(summary.totalProtein) + 'g');
             }
 
             // Update daily breakdown table
@@ -439,10 +459,10 @@ if ($isAjax) {
                     html += `
                         <tr class="${rowClass} border-b border-stone-100 transition-colors">
                             <td class="py-3 px-1 font-medium ${dateClass}">${day.date.toUpperCase()}</td>
-                            <td class="py-3 px-1 text-center border-l border-stone-100 ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : day.totals.kcal}</td>
-                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : day.totals.protein}</td>
-                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : day.totals.carbs}</td>
-                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : day.totals.fat}</td>
+                            <td class="py-3 px-1 text-center border-l border-stone-100 ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : formatNumber(day.totals.kcal)}</td>
+                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.protein)}</td>
+                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.carbs)}</td>
+                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.fat)}</td>
                         </tr>
                     `;
                 });
@@ -461,10 +481,10 @@ if ($isAjax) {
                             mealsHtml += `
                                 <tr class="border-t border-stone-100">
                                     <td class="py-2 text-stone-700">${escapeHtml(meal.name)}</td>
-                                    <td class="py-2 text-center text-stone-600 border-l border-stone-100">${meal.kcal}</td>
-                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${meal.protein}</td>
-                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${meal.carbs}</td>
-                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${meal.fat}</td>
+                                    <td class="py-2 text-center text-stone-600 border-l border-stone-100">${formatNumber(meal.kcal)}</td>
+                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
+                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
+                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
                                 </tr>
                             `;
                         });
@@ -474,7 +494,7 @@ if ($isAjax) {
                                 <div class="bg-stone-50 px-4 py-3 cursor-pointer day-header flex justify-between items-center" data-target="day-${dayIndex}">
                                     <div class="font-medium text-stone-700">${day.date.toUpperCase()}</div>
                                     <div class="flex items-center gap-2 text-sm text-stone-500">
-                                        ${day.totals.kcal} kcal
+                                        ${formatNumber(day.totals.kcal)} kcal
                                         <i data-lucide="chevron-down" class="w-4 h-4 toggle-icon transition-transform"></i>
                                     </div>
                                 </div>

@@ -92,12 +92,21 @@ if (isset($_POST['add_meal'])) {
         file_put_contents($mealsFile, json_encode($meals, JSON_PRETTY_PRINT));
 
         if ($isAjax) {
+            // Round values for JSON response
+            $newMealRounded = [
+                'name' => $newMeal['name'],
+                'protein' => round($newMeal['protein'], 2),
+                'carbs' => round($newMeal['carbs'], 2),
+                'fat' => round($newMeal['fat'], 2),
+                'color' => $newMeal['color'],
+                'description' => $newMeal['description']
+            ];
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => true,
                 'message' => 'Meal added successfully!',
-                'meal' => $newMeal,
-                'kcal' => calculateKcal($protein, $carbs, $fat)
+                'meal' => $newMealRounded,
+                'kcal' => round(calculateKcal($protein, $carbs, $fat), 2)
             ]);
             exit;
         }
@@ -179,13 +188,22 @@ if (isset($_POST['update_meal'])) {
         file_put_contents($mealsFile, json_encode($meals, JSON_PRETTY_PRINT));
 
         if ($isAjax) {
+            // Round values for JSON response
+            $updatedMealRounded = [
+                'name' => $updatedMeal['name'],
+                'protein' => round($updatedMeal['protein'], 2),
+                'carbs' => round($updatedMeal['carbs'], 2),
+                'fat' => round($updatedMeal['fat'], 2),
+                'color' => $updatedMeal['color'],
+                'description' => $updatedMeal['description']
+            ];
             header('Content-Type: application/json');
             echo json_encode([
                 'success' => true,
                 'message' => 'Meal updated successfully!',
-                'meal' => $updatedMeal,
+                'meal' => $updatedMealRounded,
                 'oldName' => $oldName,
-                'kcal' => calculateKcal($protein, $carbs, $fat)
+                'kcal' => round(calculateKcal($protein, $carbs, $fat), 2)
             ]);
             exit;
         }
@@ -387,7 +405,7 @@ usort($meals, function ($a, $b) {
                         </thead>
                         <tbody>
                             <?php foreach ($meals as $meal): ?>
-                                <?php $mealKcal = calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']); ?>
+                                <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
                                     <td class="py-3 px-1 text-stone-700">
                                         <div class="flex items-center justify-between gap-2">
@@ -402,9 +420,9 @@ usort($meals, function ($a, $b) {
                                         </div>
                                     </td>
                                     <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['protein']; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['carbs']; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo $meal['fat']; ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
                                     <td class="py-3 px-1 text-center border-l border-stone-100">
                                         <div class="flex max-sm:flex-col itens-center justify-center gap-1">
                                             <button type="button"
@@ -543,6 +561,11 @@ usort($meals, function ($a, $b) {
         lucide.createIcons();
 
         $(document).ready(function() {
+            // Helper function to format number to max 2 decimal places
+            function formatNumber(num) {
+                return parseFloat(parseFloat(num).toFixed(2));
+            }
+
             // Calculate estimated KCAL for new meal form
             function updateEstimatedKcal() {
                 const protein = parseFloat($('#protein').val()) || 0;
@@ -550,7 +573,7 @@ usort($meals, function ($a, $b) {
                 const fat = parseFloat($('#fat').val()) || 0;
 
                 const kcal = (protein * 4) + (carbs * 4) + (fat * 9);
-                $('#estimated-kcal').text(Math.round(kcal));
+                $('#estimated-kcal').text(formatNumber(kcal));
             }
 
             // Calculate estimated KCAL for edit form
@@ -560,7 +583,7 @@ usort($meals, function ($a, $b) {
                 const fat = parseFloat($('#edit-fat').val()) || 0;
 
                 const kcal = (protein * 4) + (carbs * 4) + (fat * 9);
-                $('#edit-estimated-kcal').text(Math.round(kcal));
+                $('#edit-estimated-kcal').text(formatNumber(kcal));
             }
 
             // Update KCAL preview on input change
@@ -685,10 +708,10 @@ usort($meals, function ($a, $b) {
 
                             // Update row content
                             $row.find('td:eq(0) span').first().text(response.meal.name);
-                            $row.find('td:eq(1)').text(response.kcal);
-                            $row.find('td:eq(2)').text(response.meal.protein);
-                            $row.find('td:eq(3)').text(response.meal.carbs);
-                            $row.find('td:eq(4)').text(response.meal.fat);
+                            $row.find('td:eq(1)').text(formatNumber(response.kcal));
+                            $row.find('td:eq(2)').text(formatNumber(response.meal.protein));
+                            $row.find('td:eq(3)').text(formatNumber(response.meal.carbs));
+                            $row.find('td:eq(4)').text(formatNumber(response.meal.fat));
 
                             // Update button data attributes
                             const $editBtn = $row.find('.edit-meal-btn');
@@ -749,10 +772,10 @@ usort($meals, function ($a, $b) {
                                 </button>
                             </div>
                         </td>
-                        <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${kcal}</td>
-                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${meal.protein}</td>
-                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${meal.carbs}</td>
-                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${meal.fat}</td>
+                        <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(kcal)}</td>
+                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
+                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
+                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
                         <td class="py-3 px-1 text-center border-l border-stone-100">
                             <div class="flex max-sm:flex-col itens-center justify-center gap-1">
                                 <button type="button"
