@@ -334,7 +334,7 @@ if ($isAjax) {
                                         <i data-lucide="chevron-down" class="w-4 h-4 toggle-icon transition-transform"></i>
                                     </div>
                                 </div>
-                                <div id="day-<?php echo $index; ?>" class=" p-4 overflow-x-auto day-content hidden border-t border-stone-100">
+                                <div id="day-<?php echo $index; ?>" class=" px-2 py-4 overflow-x-auto day-content hidden border-t border-stone-100">
                                     <table class="w-full">
                                         <thead>
                                             <tr class="text-xs text-stone-500 uppercase tracking-wide">
@@ -525,7 +525,7 @@ if ($isAjax) {
                                         <i data-lucide="chevron-down" class="w-4 h-4 toggle-icon transition-transform"></i>
                                     </div>
                                 </div>
-                                <div id="day-${dayIndex}" class=" p-4 overflow-x-auto day-content hidden border-t border-stone-100">
+                                <div id="day-${dayIndex}" class=" px-2 py-4 overflow-x-auto day-content hidden border-t border-stone-100">
                                     <table class="w-full">
                                         <thead>
                                             <tr class="text-xs text-stone-500 uppercase tracking-wide">
