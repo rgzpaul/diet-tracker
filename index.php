@@ -138,6 +138,20 @@ if (isset($_POST['add_meal'])) {
                 $totalFat += $m['fat'];
             }
 
+            // Count occurrences of this meal and calculate group totals
+            $groupCount = 0;
+            $groupProtein = 0;
+            $groupCarbs = 0;
+            $groupFat = 0;
+            foreach ($dateMeals as $m) {
+                if ($m['name'] === $newMeal['name']) {
+                    $groupCount++;
+                    $groupProtein += $m['protein'];
+                    $groupCarbs += $m['carbs'];
+                    $groupFat += $m['fat'];
+                }
+            }
+
             // Round values for JSON response
             $newMealRounded = [
                 'name' => $newMeal['name'],
@@ -153,6 +167,13 @@ if (isset($_POST['add_meal'])) {
                 'meal' => $newMealRounded,
                 'mealKcal' => round(calculateKcal($newMeal['protein'], $newMeal['carbs'], $newMeal['fat']), 2),
                 'mealIndex' => count($dateMeals) - 1,
+                'groupCount' => $groupCount,
+                'groupTotals' => [
+                    'kcal' => round(calculateKcal($groupProtein, $groupCarbs, $groupFat), 2),
+                    'protein' => round($groupProtein, 2),
+                    'carbs' => round($groupCarbs, 2),
+                    'fat' => round($groupFat, 2)
+                ],
                 'totals' => [
                     'kcal' => round($totalKcal, 2),
                     'protein' => round($totalProtein, 2),
@@ -175,44 +196,80 @@ if (isset($_POST['add_meal'])) {
     }
 }
 
-// Handle deleting a meal from selected date's meals
+// Handle deleting a meal from selected date's meals (by name - removes one occurrence)
 if (isset($_POST['delete_today_meal'])) {
-    $mealIndex = (int)$_POST['meal_index'];
+    $mealName = isset($_POST['meal_name']) ? $_POST['meal_name'] : '';
     $targetDate = isset($_POST['target_date']) ? $_POST['target_date'] : date('Y-m-d');
 
-    // Check if date has meals and the index is valid
-    if (isset($dailyMeals[$targetDate]) && isset($dailyMeals[$targetDate]['meals'][$mealIndex])) {
-        // Remove the meal
-        array_splice($dailyMeals[$targetDate]['meals'], $mealIndex, 1);
-
-        // Save the updated daily meals
-        file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
-
-        if ($isAjax) {
-            // Calculate new totals
-            $dateMeals = $dailyMeals[$targetDate]['meals'];
-            $totalKcal = 0;
-            $totalProtein = 0;
-            $totalCarbs = 0;
-            $totalFat = 0;
-            foreach ($dateMeals as $m) {
-                $totalKcal += calculateKcal($m['protein'], $m['carbs'], $m['fat']);
-                $totalProtein += $m['protein'];
-                $totalCarbs += $m['carbs'];
-                $totalFat += $m['fat'];
+    // Check if date has meals
+    if (isset($dailyMeals[$targetDate]) && !empty($dailyMeals[$targetDate]['meals'])) {
+        // Find and remove the last occurrence of the meal with this name
+        $mealFound = false;
+        $mealsArray = $dailyMeals[$targetDate]['meals'];
+        for ($i = count($mealsArray) - 1; $i >= 0; $i--) {
+            if ($mealsArray[$i]['name'] === $mealName) {
+                array_splice($dailyMeals[$targetDate]['meals'], $i, 1);
+                $mealFound = true;
+                break;
             }
+        }
 
+        if ($mealFound) {
+            // Save the updated daily meals
+            file_put_contents($dailyMealsFile, json_encode($dailyMeals, JSON_PRETTY_PRINT));
+
+            if ($isAjax) {
+                // Calculate new totals
+                $dateMeals = $dailyMeals[$targetDate]['meals'];
+                $totalKcal = 0;
+                $totalProtein = 0;
+                $totalCarbs = 0;
+                $totalFat = 0;
+                foreach ($dateMeals as $m) {
+                    $totalKcal += calculateKcal($m['protein'], $m['carbs'], $m['fat']);
+                    $totalProtein += $m['protein'];
+                    $totalCarbs += $m['carbs'];
+                    $totalFat += $m['fat'];
+                }
+
+                // Count remaining occurrences of this meal and calculate group totals
+                $remainingCount = 0;
+                $groupProtein = 0;
+                $groupCarbs = 0;
+                $groupFat = 0;
+                foreach ($dateMeals as $m) {
+                    if ($m['name'] === $mealName) {
+                        $remainingCount++;
+                        $groupProtein += $m['protein'];
+                        $groupCarbs += $m['carbs'];
+                        $groupFat += $m['fat'];
+                    }
+                }
+
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => true,
+                    'totals' => [
+                        'kcal' => round($totalKcal, 2),
+                        'protein' => round($totalProtein, 2),
+                        'carbs' => round($totalCarbs, 2),
+                        'fat' => round($totalFat, 2)
+                    ],
+                    'mealsCount' => count($dateMeals),
+                    'remainingCount' => $remainingCount,
+                    'mealName' => $mealName,
+                    'groupTotals' => [
+                        'kcal' => round(calculateKcal($groupProtein, $groupCarbs, $groupFat), 2),
+                        'protein' => round($groupProtein, 2),
+                        'carbs' => round($groupCarbs, 2),
+                        'fat' => round($groupFat, 2)
+                    ]
+                ]);
+                exit;
+            }
+        } else if ($isAjax) {
             header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true,
-                'totals' => [
-                    'kcal' => round($totalKcal, 2),
-                    'protein' => round($totalProtein, 2),
-                    'carbs' => round($totalCarbs, 2),
-                    'fat' => round($totalFat, 2)
-                ],
-                'mealsCount' => count($dateMeals)
-            ]);
+            echo json_encode(['success' => false, 'error' => 'Meal not found']);
             exit;
         }
     } else if ($isAjax) {
@@ -240,6 +297,30 @@ foreach ($selectedDateMeals as $meal) {
     $totalCarbs += $meal['carbs'];
     $totalFat += $meal['fat'];
 }
+
+// Group meals by name for display
+$groupedMeals = [];
+foreach ($selectedDateMeals as $index => $meal) {
+    $name = $meal['name'];
+    if (!isset($groupedMeals[$name])) {
+        $groupedMeals[$name] = [
+            'name' => $name,
+            'protein' => $meal['protein'],
+            'carbs' => $meal['carbs'],
+            'fat' => $meal['fat'],
+            'color' => isset($meal['color']) ? $meal['color'] : 'blue',
+            'count' => 1,
+            'indices' => [$index]
+        ];
+    } else {
+        $groupedMeals[$name]['protein'] += $meal['protein'];
+        $groupedMeals[$name]['carbs'] += $meal['carbs'];
+        $groupedMeals[$name]['fat'] += $meal['fat'];
+        $groupedMeals[$name]['count']++;
+        $groupedMeals[$name]['indices'][] = $index;
+    }
+}
+$groupedMeals = array_values($groupedMeals);
 
 // Format selected date for display
 $displayDate = date('D d/m', strtotime($selectedDate));
@@ -303,7 +384,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (empty($selectedDateMeals)): ?>
+                        <?php if (empty($groupedMeals)): ?>
                             <tr>
                                 <td colspan="5" class="py-8 text-center text-stone-400">
                                     <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
@@ -311,14 +392,15 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                 </td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($selectedDateMeals as $index => $meal): ?>
-                                <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
-                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="<?php echo $index; ?>" data-name="<?php echo htmlspecialchars($meal['name']); ?>">
-                                    <td class="py-3 px-1 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
+                            <?php foreach ($groupedMeals as $group): ?>
+                                <?php $mealKcal = round(calculateKcal($group['protein'], $group['carbs'], $group['fat']), 2); ?>
+                                <?php $displayName = $group['name'] . ($group['count'] > 1 ? ' (x' . $group['count'] . ')' : ''); ?>
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="<?php echo htmlspecialchars($group['name']); ?>" data-count="<?php echo $group['count']; ?>">
+                                    <td class="py-3 px-1 text-stone-700"><?php echo htmlspecialchars($displayName); ?></td>
                                     <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($group['protein'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($group['carbs'], 2); ?></td>
+                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo round($group['fat'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -501,26 +583,43 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                 $noMealsRow.remove();
                             }
 
-                            // Create new meal row
-                            const newRow = `
-                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-index="${response.mealIndex}" data-name="${escapeHtml(response.meal.name)}" style="opacity: 0;">
-                                    <td class="py-3 px-1 text-stone-700">${escapeHtml(response.meal.name)}</td>
-                                    <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(response.mealKcal)}</td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.protein)}</td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.carbs)}</td>
-                                    <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.fat)}</td>
-                                </tr>
-                            `;
+                            // Check if this meal already exists in the table
+                            const $existingRow = $(`.meal-row[data-name="${escapeHtml(response.meal.name)}"]`);
 
-                            // Insert before totals row
-                            const $totalsRow = $('tbody tr.bg-stone-100');
-                            $(newRow).insertBefore($totalsRow).animate({opacity: 1}, 200);
+                            if ($existingRow.length && response.groupCount > 1) {
+                                // Update existing row with new group values
+                                const displayName = response.meal.name + ' (x' + response.groupCount + ')';
+                                $existingRow.find('td:eq(0)').text(displayName);
+                                $existingRow.find('td:eq(1)').text(formatNumber(response.groupTotals.kcal));
+                                $existingRow.find('td:eq(2)').text(formatNumber(response.groupTotals.protein));
+                                $existingRow.find('td:eq(3)').text(formatNumber(response.groupTotals.carbs));
+                                $existingRow.find('td:eq(4)').text(formatNumber(response.groupTotals.fat));
+                                $existingRow.data('count', response.groupCount);
+                                $existingRow.attr('data-count', response.groupCount);
+                                // Flash animation to show update
+                                $existingRow.css('background-color', '#fef3c7').animate({backgroundColor: 'transparent'}, 500);
+                            } else {
+                                // Create new meal row
+                                const newRow = `
+                                    <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="${escapeHtml(response.meal.name)}" data-count="1" style="opacity: 0;">
+                                        <td class="py-3 px-1 text-stone-700">${escapeHtml(response.meal.name)}</td>
+                                        <td class="py-3 px-1 text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(response.mealKcal)}</td>
+                                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.protein)}</td>
+                                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.carbs)}</td>
+                                        <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.fat)}</td>
+                                    </tr>
+                                `;
+
+                                // Insert before totals row
+                                const $totalsRow = $('tbody tr.bg-stone-100');
+                                $(newRow).insertBefore($totalsRow).animate({opacity: 1}, 200);
+
+                                // Rebind click events
+                                bindMealRowEvents();
+                            }
 
                             // Update totals
                             updateTotals(response.totals);
-
-                            // Rebind click events
-                            bindMealRowEvents();
                         }
                         $button.removeClass('opacity-50').prop('disabled', false);
                     },
@@ -535,47 +634,60 @@ $displayDate = date('D d/m', strtotime($selectedDate));
             function bindMealRowEvents() {
                 $('.meal-row').off('click').on('click', function() {
                     const $row = $(this);
-                    const mealIndex = $row.data('index');
                     const mealName = $row.data('name');
+                    const count = $row.data('count') || 1;
 
-                    if (confirm('Delete ' + mealName + ' from the log?')) {
+                    if (confirm('Delete one ' + mealName + ' from the log?')) {
 
                         $.ajax({
                             url: 'index.php?date=' + selectedDate,
                             method: 'POST',
                             data: {
                                 delete_today_meal: 1,
-                                meal_index: mealIndex,
+                                meal_name: mealName,
                                 target_date: selectedDate
                             },
                             dataType: 'json',
                             success: function(response) {
                                 if (response.success) {
-                                    // Animate row removal
-                                    $row.animate({opacity: 0}, 200, function() {
-                                        $(this).remove();
+                                    // Update totals
+                                    updateTotals(response.totals);
 
-                                        // Update totals
-                                        updateTotals(response.totals);
+                                    if (response.remainingCount === 0) {
+                                        // Remove the row entirely
+                                        $row.animate({opacity: 0}, 200, function() {
+                                            $(this).remove();
 
-                                        // Re-index remaining rows
-                                        reindexMealRows();
+                                            // Show "No meals" if empty
+                                            if (response.mealsCount === 0) {
+                                                const isToday = selectedDate === '<?php echo date('Y-m-d'); ?>';
+                                                const emptyRow = `
+                                                    <tr>
+                                                        <td colspan="5" class="py-8 text-center text-stone-400">
+                                                            <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                                                            <p>No meals added ${isToday ? 'today' : 'on this day'}</p>
+                                                        </td>
+                                                    </tr>
+                                                `;
+                                                $(emptyRow).insertBefore($('tbody tr.bg-stone-100'));
+                                                lucide.createIcons();
+                                            }
+                                        });
+                                    } else {
+                                        // Update the row with new count and values
+                                        const newCount = response.remainingCount;
+                                        const displayName = newCount > 1 ? mealName + ' (x' + newCount + ')' : mealName;
 
-                                        // Show "No meals" if empty
-                                        if (response.mealsCount === 0) {
-                                            const isToday = selectedDate === '<?php echo date('Y-m-d'); ?>';
-                                            const emptyRow = `
-                                                <tr>
-                                                    <td colspan="5" class="py-8 text-center text-stone-400">
-                                                        <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-                                                        <p>No meals added ${isToday ? 'today' : 'on this day'}</p>
-                                                    </td>
-                                                </tr>
-                                            `;
-                                            $(emptyRow).insertBefore($('tbody tr.bg-stone-100'));
-                                            lucide.createIcons();
-                                        }
-                                    });
+                                        $row.find('td:eq(0)').text(displayName);
+                                        $row.find('td:eq(1)').text(formatNumber(response.groupTotals.kcal));
+                                        $row.find('td:eq(2)').text(formatNumber(response.groupTotals.protein));
+                                        $row.find('td:eq(3)').text(formatNumber(response.groupTotals.carbs));
+                                        $row.find('td:eq(4)').text(formatNumber(response.groupTotals.fat));
+                                        $row.data('count', newCount);
+                                        $row.attr('data-count', newCount);
+                                        // Flash animation to show update
+                                        $row.css('background-color', '#fef3c7').animate({backgroundColor: 'transparent'}, 500);
+                                    }
                                 }
                             },
                             error: function() {
@@ -596,14 +708,6 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                 $totalsRow.find('td:eq(2)').text(formatNumber(totals.protein));
                 $totalsRow.find('td:eq(3)').text(formatNumber(totals.carbs));
                 $totalsRow.find('td:eq(4)').text(formatNumber(totals.fat));
-            }
-
-            // Function to re-index meal rows after deletion
-            function reindexMealRows() {
-                $('.meal-row').each(function(index) {
-                    $(this).data('index', index);
-                    $(this).attr('data-index', index);
-                });
             }
 
             // Helper function to escape HTML
