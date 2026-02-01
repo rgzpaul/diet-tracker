@@ -16,42 +16,42 @@ if (!file_exists($mealsFile)) {
             'protein' => 10,
             'carbs' => 50,
             'fat' => 5,
-            'color' => 'green'
+            'color' => 'amber'
         ],
         [
             'name' => 'Chicken Salad',
             'protein' => 30,
             'carbs' => 15,
             'fat' => 18,
-            'color' => 'blue'
+            'color' => 'orange'
         ],
         [
             'name' => 'Protein Shake',
             'protein' => 25,
             'carbs' => 10,
             'fat' => 3,
-            'color' => 'blue'
+            'color' => 'orange'
         ],
         [
             'name' => 'Salmon with Rice',
             'protein' => 35,
             'carbs' => 40,
             'fat' => 15,
-            'color' => 'orange'
+            'color' => 'amber'
         ],
         [
             'name' => 'Greek Yogurt',
             'protein' => 15,
             'carbs' => 8,
             'fat' => 5,
-            'color' => 'blue'
+            'color' => 'orange'
         ],
         [
             'name' => 'Banana',
             'protein' => 1,
             'carbs' => 27,
             'fat' => 0,
-            'color' => 'brown'
+            'color' => 'yellow'
         ]
     ];
     file_put_contents($mealsFile, json_encode($initialMeals, JSON_PRETTY_PRINT));
@@ -117,7 +117,7 @@ if (isset($_POST['add_meal'])) {
             'protein' => $mealToAdd['protein'],
             'carbs' => $mealToAdd['carbs'],
             'fat' => $mealToAdd['fat'],
-            'color' => isset($mealToAdd['color']) ? $mealToAdd['color'] : 'blue'
+            'color' => isset($mealToAdd['color']) ? $mealToAdd['color'] : 'orange'
         ];
         $dailyMeals[$targetDate]['meals'][] = $newMeal;
 
@@ -308,7 +308,7 @@ foreach ($selectedDateMeals as $index => $meal) {
             'protein' => $meal['protein'],
             'carbs' => $meal['carbs'],
             'fat' => $meal['fat'],
-            'color' => isset($meal['color']) ? $meal['color'] : 'blue',
+            'color' => isset($meal['color']) ? $meal['color'] : 'orange',
             'count' => 1,
             'indices' => [$index]
         ];
@@ -445,17 +445,17 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             <button type="submit" name="add_meal"
                                 class="meal-button h-full w-full
                                 <?php
-                                $buttonColor = isset($meal['color']) ? $meal['color'] : 'grey';
+                                $buttonColor = isset($meal['color']) ? $meal['color'] : 'orange';
                                 switch ($buttonColor) {
-                                    case 'brown':
-                                        echo 'bg-amber-700 hover:bg-amber-800';
+                                    case 'yellow':
+                                        echo 'bg-yellow-500 hover:bg-yellow-600';
+                                        break;
+                                    case 'amber':
+                                        echo 'bg-amber-500 hover:bg-amber-600';
                                         break;
                                     case 'orange':
-                                        echo 'bg-orange-500 hover:bg-orange-600';
-                                        break;
-                                    case 'blue':
                                     default:
-                                        echo 'bg-blue-600 hover:bg-blue-700';
+                                        echo 'bg-orange-500 hover:bg-orange-600';
                                         break;
                                 }
                                 ?> text-white py-3 px-3 rounded-lg text-left pr-8">

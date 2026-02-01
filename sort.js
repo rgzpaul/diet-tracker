@@ -73,16 +73,15 @@ if (mealContainer) {
 
     // Extract color class from class list
     const colorA = Array.from(buttonA.classList).find(cls =>
-      cls.startsWith('bg-stone-') && !cls.includes('hover'));
+      (cls.startsWith('bg-orange-') || cls.startsWith('bg-amber-') || cls.startsWith('bg-yellow-')) && !cls.includes('hover'));
     const colorB = Array.from(buttonB.classList).find(cls =>
-      cls.startsWith('bg-stone-') && !cls.includes('hover'));
+      (cls.startsWith('bg-orange-') || cls.startsWith('bg-amber-') || cls.startsWith('bg-yellow-')) && !cls.includes('hover'));
 
     // Define color order (darker shades first)
     const colorOrder = {
-      'bg-stone-800': 1,
-      'bg-stone-700': 2,
-      'bg-stone-600': 3,
-      'bg-stone-500': 4
+      'bg-orange-500': 1,
+      'bg-amber-500': 2,
+      'bg-yellow-500': 3
     };
 
     return (colorOrder[colorA] || 5) - (colorOrder[colorB] || 5);
