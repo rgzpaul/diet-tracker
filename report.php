@@ -85,7 +85,26 @@ for ($i = 0; $i < 7; $i++) {
 
     // If we have data for this day, add it
     if (isset($dailyMeals[$dateKey])) {
-        $dayData['meals'] = $dailyMeals[$dateKey]['meals'];
+        // Group meals by name for display
+        $groupedMeals = [];
+        foreach ($dailyMeals[$dateKey]['meals'] as $meal) {
+            $name = $meal['name'];
+            if (!isset($groupedMeals[$name])) {
+                $groupedMeals[$name] = [
+                    'name' => $name,
+                    'protein' => $meal['protein'],
+                    'carbs' => $meal['carbs'],
+                    'fat' => $meal['fat'],
+                    'count' => 1
+                ];
+            } else {
+                $groupedMeals[$name]['protein'] += $meal['protein'];
+                $groupedMeals[$name]['carbs'] += $meal['carbs'];
+                $groupedMeals[$name]['fat'] += $meal['fat'];
+                $groupedMeals[$name]['count']++;
+            }
+        }
+        $dayData['meals'] = array_values($groupedMeals);
 
         // Calculate totals for this day
         foreach ($dayData['meals'] as $meal) {
@@ -328,9 +347,12 @@ if ($isAjax) {
                                         </thead>
                                         <tbody>
                                             <?php foreach ($day['meals'] as $meal): ?>
-                                                <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
+                                                <?php
+                                                    $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2);
+                                                    $displayName = $meal['name'] . ($meal['count'] > 1 ? ' (x' . $meal['count'] . ')' : '');
+                                                ?>
                                                 <tr class="border-t border-stone-100">
-                                                    <td class=text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
+                                                    <td class=text-stone-700"><?php echo htmlspecialchars($displayName); ?></td>
                                                     <td class=text-center text-stone-600 border-l border-stone-100"><?php echo $mealKcal; ?></td>
                                                     <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
                                                     <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
@@ -482,9 +504,10 @@ if ($isAjax) {
                     if (day.meals.length > 0) {
                         let mealsHtml = '';
                         day.meals.forEach(function(meal) {
+                            const displayName = meal.name + (meal.count > 1 ? ' (x' + meal.count + ')' : '');
                             mealsHtml += `
                                 <tr class="border-t border-stone-100">
-                                    <td class=text-stone-700">${escapeHtml(meal.name)}</td>
+                                    <td class=text-stone-700">${escapeHtml(displayName)}</td>
                                     <td class=text-center text-stone-600 border-l border-stone-100">${formatNumber(meal.kcal)}</td>
                                     <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
                                     <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
