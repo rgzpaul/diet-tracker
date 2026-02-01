@@ -341,7 +341,8 @@ $displayDate = date('D d/m', strtotime($selectedDate));
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        td {
+        th, td {
+            padding: 0.75rem 0.5rem;
             white-space: nowrap;
         }
         .meal-button {
@@ -385,11 +386,11 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                 <table class="w-full">
                     <thead>
                         <tr class="border-b border-stone-200">
-                            <th class="pb-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
-                            <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
+                            <th class=text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
+                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
+                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
+                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
+                            <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -405,22 +406,22 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                 <?php $mealKcal = round(calculateKcal($group['protein'], $group['carbs'], $group['fat']), 2); ?>
                                 <?php $displayName = $group['name'] . ($group['count'] > 1 ? ' (x' . $group['count'] . ')' : ''); ?>
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="<?php echo htmlspecialchars($group['name']); ?>" data-count="<?php echo $group['count']; ?>">
-                                    <td class="py-3 px-2 text-stone-700"><?php echo htmlspecialchars($displayName); ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($group['protein'], 2); ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($group['carbs'], 2); ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($group['fat'], 2); ?></td>
+                                    <td class=text-stone-700"><?php echo htmlspecialchars($displayName); ?></td>
+                                    <td class=text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
+                                    <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($group['protein'], 2); ?></td>
+                                    <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($group['carbs'], 2); ?></td>
+                                    <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($group['fat'], 2); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
 
                         <!-- Totals Row -->
                         <tr class="bg-stone-100">
-                            <td class="py-3 px-2 font-semibold text-stone-800">Total</td>
-                            <td class="py-3 px-2 text-center font-semibold text-stone-800 border-l border-stone-100"><?php echo round($totalKcal, 2); ?></td>
-                            <td class="py-3 px-2 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalProtein, 2); ?></td>
-                            <td class="py-3 px-2 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalCarbs, 2); ?></td>
-                            <td class="py-3 px-2 text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalFat, 2); ?></td>
+                            <td class=font-semibold text-stone-800">Total</td>
+                            <td class=text-center font-semibold text-stone-800 border-l border-stone-100"><?php echo round($totalKcal, 2); ?></td>
+                            <td class=text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalProtein, 2); ?></td>
+                            <td class=text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalCarbs, 2); ?></td>
+                            <td class=text-center font-medium text-stone-600 border-l border-stone-100"><?php echo round($totalFat, 2); ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -612,11 +613,11 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                 // Create new meal row
                                 const newRow = `
                                     <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="${escapeHtml(response.meal.name)}" data-count="1" style="opacity: 0;">
-                                        <td class="py-3 px-2 text-stone-700">${escapeHtml(response.meal.name)}</td>
-                                        <td class="py-3 px-2 text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(response.mealKcal)}</td>
-                                        <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.protein)}</td>
-                                        <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.carbs)}</td>
-                                        <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.fat)}</td>
+                                        <td class=text-stone-700">${escapeHtml(response.meal.name)}</td>
+                                        <td class=text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(response.mealKcal)}</td>
+                                        <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.protein)}</td>
+                                        <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.carbs)}</td>
+                                        <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.fat)}</td>
                                     </tr>
                                 `;
 

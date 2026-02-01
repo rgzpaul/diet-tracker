@@ -293,6 +293,10 @@ usort($meals, function ($a, $b) {
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
+        th, td {
+            padding: 0.75rem 0.5rem;
+            white-space: nowrap;
+        }
     </style>
 </head>
 
@@ -395,19 +399,19 @@ usort($meals, function ($a, $b) {
                     <table class="w-full meals-table">
                         <thead>
                             <tr class="border-b border-stone-200">
-                                <th class="pb-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
-                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
-                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
-                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
-                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
-                                <th class="pb-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100"></th>
+                                <th class=text-left text-xs font-medium text-stone-500 uppercase tracking-wide">Meal</th>
+                                <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">K</th>
+                                <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">P</th>
+                                <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">C</th>
+                                <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100">F</th>
+                                <th class=text-center text-xs font-medium text-stone-500 uppercase tracking-wide border-l border-stone-100"></th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($meals as $meal): ?>
                                 <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
                                 <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
-                                    <td class="py-3 px-2 text-stone-700">
+                                    <td class=text-stone-700">
                                         <div class="flex items-center justify-between gap-2">
                                             <span><?php echo htmlspecialchars($meal['name']); ?></span>
                                             <button type="button"
@@ -419,11 +423,11 @@ usort($meals, function ($a, $b) {
                                             </button>
                                         </div>
                                     </td>
-                                    <td class="py-3 px-2 text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
-                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
-                                    <td class="py-3 px-2 text-center border-l border-stone-100">
+                                    <td class=text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
+                                    <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
+                                    <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
+                                    <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
+                                    <td class=text-center border-l border-stone-100">
                                         <div class="flex max-sm:flex-col itens-center justify-center gap-1">
                                             <button type="button"
                                                 class="edit-meal-btn p-2 flex justify-center text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
@@ -760,7 +764,7 @@ usort($meals, function ($a, $b) {
                 const description = meal.description || '';
                 return `
                     <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
-                        <td class="py-3 px-2 text-stone-700">
+                        <td class=text-stone-700">
                             <div class="flex items-center justify-between gap-2">
                                 <span>${escapeHtml(meal.name)}</span>
                                 <button type="button"
@@ -772,11 +776,11 @@ usort($meals, function ($a, $b) {
                                 </button>
                             </div>
                         </td>
-                        <td class="py-3 px-2 text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(kcal)}</td>
-                        <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
-                        <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
-                        <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
-                        <td class="py-3 px-2 text-center border-l border-stone-100">
+                        <td class=text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(kcal)}</td>
+                        <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
+                        <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
+                        <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
+                        <td class=text-center border-l border-stone-100">
                             <div class="flex max-sm:flex-col itens-center justify-center gap-1">
                                 <button type="button"
                                     class="edit-meal-btn p-2 flex justify-center text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
