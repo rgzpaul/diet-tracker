@@ -15,14 +15,14 @@ if (!file_exists($mealsFile)) {
             'protein' => 10,
             'carbs' => 50,
             'fat' => 5,
-            'color' => 'blue'
+            'color' => 'amber'
         ],
         [
             'name' => 'Chicken Salad',
             'protein' => 30,
             'carbs' => 15,
             'fat' => 18,
-            'color' => 'green'
+            'color' => 'orange'
         ]
     ];
     file_put_contents($mealsFile, json_encode($initialMeals, JSON_PRETTY_PRINT));
@@ -356,9 +356,9 @@ usort($meals, function ($a, $b) {
                     <label for="color" class="block text-sm font-medium text-stone-600 mb-1.5">Category</label>
                     <select id="color" name="color"
                         class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
-                        <option value="blue">Protein-rich</option>
-                        <option value="brown">Snacks</option>
-                        <option value="orange">Mixed</option>
+                        <option value="orange">Protein-rich</option>
+                        <option value="amber">Mixed</option>
+                        <option value="yellow">Snacks</option>
                     </select>
                 </div>
 
@@ -497,10 +497,9 @@ usort($meals, function ($a, $b) {
                         <label for="edit-color" class="block text-sm font-medium text-stone-600 mb-1.5">Category</label>
                         <select id="edit-color" name="color"
                             class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:border-transparent transition-all">
-                            <option value="blue">Protein-rich</option>
-                            <option value="green">Vegetables</option>
-                            <option value="brown">Snacks</option>
-                            <option value="orange">Mixed</option>
+                            <option value="orange">Protein-rich</option>
+                            <option value="amber">Mixed</option>
+                            <option value="yellow">Snacks</option>
                         </select>
                     </div>
 
