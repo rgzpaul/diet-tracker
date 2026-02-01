@@ -280,11 +280,11 @@ if ($isAjax) {
                     <tbody id="daily-breakdown-tbody">
                         <?php foreach ($weekDays as $day): ?>
                             <tr class="<?php echo empty($day['meals']) ? 'text-stone-400' : 'hover:bg-stone-50'; ?> border-b border-stone-100 transition-colors">
-                                <td class="py-3 px-1 font-medium <?php echo empty($day['meals']) ? 'text-stone-400' : 'text-stone-700'; ?>"><?php echo strtoupper($day['date']); ?></td>
-                                <td class="py-3 px-1 text-center border-l border-stone-100 <?php echo empty($day['meals']) ? '' : 'font-medium text-stone-600'; ?>"><?php echo empty($day['meals']) ? '-' : $day['totals']['kcal']; ?></td>
-                                <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['protein']; ?></td>
-                                <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['carbs']; ?></td>
-                                <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['fat']; ?></td>
+                                <td class="py-3 px-2 font-medium <?php echo empty($day['meals']) ? 'text-stone-400' : 'text-stone-700'; ?>"><?php echo strtoupper($day['date']); ?></td>
+                                <td class="py-3 px-2 text-center border-l border-stone-100 <?php echo empty($day['meals']) ? '' : 'font-medium text-stone-600'; ?>"><?php echo empty($day['meals']) ? '-' : $day['totals']['kcal']; ?></td>
+                                <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['protein']; ?></td>
+                                <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['carbs']; ?></td>
+                                <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo empty($day['meals']) ? '-' : $day['totals']['fat']; ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -326,11 +326,11 @@ if ($isAjax) {
                                             <?php foreach ($day['meals'] as $meal): ?>
                                                 <?php $mealKcal = round(calculateKcal($meal['protein'], $meal['carbs'], $meal['fat']), 2); ?>
                                                 <tr class="border-t border-stone-100">
-                                                    <td class="py-2 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
-                                                    <td class="py-2 text-center text-stone-600 border-l border-stone-100"><?php echo $mealKcal; ?></td>
-                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
-                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
-                                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
+                                                    <td class="py-3 px-2 text-stone-700"><?php echo htmlspecialchars($meal['name']); ?></td>
+                                                    <td class="py-3 px-2 text-center text-stone-600 border-l border-stone-100"><?php echo $mealKcal; ?></td>
+                                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['protein'], 2); ?></td>
+                                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['carbs'], 2); ?></td>
+                                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100"><?php echo round($meal['fat'], 2); ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -458,11 +458,11 @@ if ($isAjax) {
 
                     html += `
                         <tr class="${rowClass} border-b border-stone-100 transition-colors">
-                            <td class="py-3 px-1 font-medium ${dateClass}">${day.date.toUpperCase()}</td>
-                            <td class="py-3 px-1 text-center border-l border-stone-100 ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : formatNumber(day.totals.kcal)}</td>
-                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.protein)}</td>
-                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.carbs)}</td>
-                            <td class="py-3 px-1 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.fat)}</td>
+                            <td class="py-3 px-2 font-medium ${dateClass}">${day.date.toUpperCase()}</td>
+                            <td class="py-3 px-2 text-center border-l border-stone-100 ${isEmpty ? '' : 'font-medium text-stone-600'}">${isEmpty ? '-' : formatNumber(day.totals.kcal)}</td>
+                            <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.protein)}</td>
+                            <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.carbs)}</td>
+                            <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${isEmpty ? '-' : formatNumber(day.totals.fat)}</td>
                         </tr>
                     `;
                 });
@@ -480,11 +480,11 @@ if ($isAjax) {
                         day.meals.forEach(function(meal) {
                             mealsHtml += `
                                 <tr class="border-t border-stone-100">
-                                    <td class="py-2 text-stone-700">${escapeHtml(meal.name)}</td>
-                                    <td class="py-2 text-center text-stone-600 border-l border-stone-100">${formatNumber(meal.kcal)}</td>
-                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
-                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
-                                    <td class="py-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
+                                    <td class="py-3 px-2 text-stone-700">${escapeHtml(meal.name)}</td>
+                                    <td class="py-3 px-2 text-center text-stone-600 border-l border-stone-100">${formatNumber(meal.kcal)}</td>
+                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.protein)}</td>
+                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.carbs)}</td>
+                                    <td class="py-3 px-2 text-center text-stone-500 border-l border-stone-100">${formatNumber(meal.fat)}</td>
                                 </tr>
                             `;
                         });
