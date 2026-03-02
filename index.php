@@ -138,19 +138,22 @@ if (isset($_POST['add_meal'])) {
                 $totalFat += $m['fat'];
             }
 
-            // Count occurrences of this meal and calculate group totals
+            // Count adjacent occurrences of this meal at the end of the list
             $groupCount = 0;
             $groupProtein = 0;
             $groupCarbs = 0;
             $groupFat = 0;
-            foreach ($dateMeals as $m) {
-                if ($m['name'] === $newMeal['name']) {
+            for ($i = count($dateMeals) - 1; $i >= 0; $i--) {
+                if ($dateMeals[$i]['name'] === $newMeal['name']) {
                     $groupCount++;
-                    $groupProtein += $m['protein'];
-                    $groupCarbs += $m['carbs'];
-                    $groupFat += $m['fat'];
+                    $groupProtein += $dateMeals[$i]['protein'];
+                    $groupCarbs += $dateMeals[$i]['carbs'];
+                    $groupFat += $dateMeals[$i]['fat'];
+                } else {
+                    break;
                 }
             }
+            $groupStart = count($dateMeals) - $groupCount;
 
             // Round values for JSON response
             $newMealRounded = [
@@ -168,6 +171,7 @@ if (isset($_POST['add_meal'])) {
                 'mealKcal' => round(calculateKcal($newMeal['protein'], $newMeal['carbs'], $newMeal['fat']), 2),
                 'mealIndex' => count($dateMeals) - 1,
                 'groupCount' => $groupCount,
+                'groupStart' => $groupStart,
                 'groupTotals' => [
                     'kcal' => round(calculateKcal($groupProtein, $groupCarbs, $groupFat), 2),
                     'protein' => round($groupProtein, 2),
@@ -196,21 +200,33 @@ if (isset($_POST['add_meal'])) {
     }
 }
 
-// Handle deleting a meal from selected date's meals (by name - removes one occurrence)
+// Handle deleting a meal from selected date's meals (removes one from a specific adjacent group)
 if (isset($_POST['delete_today_meal'])) {
     $mealName = isset($_POST['meal_name']) ? $_POST['meal_name'] : '';
+    $groupStart = isset($_POST['group_start']) ? (int)$_POST['group_start'] : -1;
     $targetDate = isset($_POST['target_date']) ? $_POST['target_date'] : date('Y-m-d');
 
     // Check if date has meals
     if (isset($dailyMeals[$targetDate]) && !empty($dailyMeals[$targetDate]['meals'])) {
-        // Find and remove the last occurrence of the meal with this name
         $mealFound = false;
         $mealsArray = $dailyMeals[$targetDate]['meals'];
-        for ($i = count($mealsArray) - 1; $i >= 0; $i--) {
-            if ($mealsArray[$i]['name'] === $mealName) {
-                array_splice($dailyMeals[$targetDate]['meals'], $i, 1);
-                $mealFound = true;
-                break;
+
+        // Remove the last item from the adjacent group starting at group_start
+        if ($groupStart >= 0 && $groupStart < count($mealsArray) && $mealsArray[$groupStart]['name'] === $mealName) {
+            $groupEnd = $groupStart;
+            while ($groupEnd + 1 < count($mealsArray) && $mealsArray[$groupEnd + 1]['name'] === $mealName) {
+                $groupEnd++;
+            }
+            array_splice($dailyMeals[$targetDate]['meals'], $groupEnd, 1);
+            $mealFound = true;
+        } else {
+            // Fallback: remove last occurrence
+            for ($i = count($mealsArray) - 1; $i >= 0; $i--) {
+                if ($mealsArray[$i]['name'] === $mealName) {
+                    array_splice($dailyMeals[$targetDate]['meals'], $i, 1);
+                    $mealFound = true;
+                    break;
+                }
             }
         }
 
@@ -232,17 +248,17 @@ if (isset($_POST['delete_today_meal'])) {
                     $totalFat += $m['fat'];
                 }
 
-                // Count remaining occurrences of this meal and calculate group totals
+                // Count remaining items in the adjacent group at group_start
                 $remainingCount = 0;
                 $groupProtein = 0;
                 $groupCarbs = 0;
                 $groupFat = 0;
-                foreach ($dateMeals as $m) {
-                    if ($m['name'] === $mealName) {
+                if ($groupStart >= 0 && $groupStart < count($dateMeals) && $dateMeals[$groupStart]['name'] === $mealName) {
+                    for ($i = $groupStart; $i < count($dateMeals) && $dateMeals[$i]['name'] === $mealName; $i++) {
                         $remainingCount++;
-                        $groupProtein += $m['protein'];
-                        $groupCarbs += $m['carbs'];
-                        $groupFat += $m['fat'];
+                        $groupProtein += $dateMeals[$i]['protein'];
+                        $groupCarbs += $dateMeals[$i]['carbs'];
+                        $groupFat += $dateMeals[$i]['fat'];
                     }
                 }
 
@@ -298,29 +314,30 @@ foreach ($selectedDateMeals as $meal) {
     $totalFat += $meal['fat'];
 }
 
-// Group meals by name for display
+// Group adjacent meals by name for display
 $groupedMeals = [];
 foreach ($selectedDateMeals as $index => $meal) {
     $name = $meal['name'];
-    if (!isset($groupedMeals[$name])) {
-        $groupedMeals[$name] = [
+    $lastIdx = count($groupedMeals) - 1;
+    if (!empty($groupedMeals) && $groupedMeals[$lastIdx]['name'] === $name) {
+        $groupedMeals[$lastIdx]['protein'] += $meal['protein'];
+        $groupedMeals[$lastIdx]['carbs'] += $meal['carbs'];
+        $groupedMeals[$lastIdx]['fat'] += $meal['fat'];
+        $groupedMeals[$lastIdx]['count']++;
+        $groupedMeals[$lastIdx]['indices'][] = $index;
+    } else {
+        $groupedMeals[] = [
             'name' => $name,
             'protein' => $meal['protein'],
             'carbs' => $meal['carbs'],
             'fat' => $meal['fat'],
             'color' => isset($meal['color']) ? $meal['color'] : 'orange',
             'count' => 1,
+            'firstIndex' => $index,
             'indices' => [$index]
         ];
-    } else {
-        $groupedMeals[$name]['protein'] += $meal['protein'];
-        $groupedMeals[$name]['carbs'] += $meal['carbs'];
-        $groupedMeals[$name]['fat'] += $meal['fat'];
-        $groupedMeals[$name]['count']++;
-        $groupedMeals[$name]['indices'][] = $index;
     }
 }
-$groupedMeals = array_values($groupedMeals);
 
 // Format selected date for display
 $displayDate = date('D d/m', strtotime($selectedDate));
@@ -405,7 +422,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             <?php foreach ($groupedMeals as $group): ?>
                                 <?php $mealKcal = round(calculateKcal($group['protein'], $group['carbs'], $group['fat']), 2); ?>
                                 <?php $displayName = $group['name'] . ($group['count'] > 1 ? ' (x' . $group['count'] . ')' : ''); ?>
-                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="<?php echo htmlspecialchars($group['name']); ?>" data-count="<?php echo $group['count']; ?>">
+                                <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="<?php echo htmlspecialchars($group['name']); ?>" data-count="<?php echo $group['count']; ?>" data-group-start="<?php echo $group['firstIndex']; ?>">
                                     <td class=text-stone-700"><?php echo htmlspecialchars($displayName); ?></td>
                                     <td class=text-center text-stone-600 font-medium border-l border-stone-100"><?php echo $mealKcal; ?></td>
                                     <td class=text-center text-stone-500 border-l border-stone-100"><?php echo round($group['protein'], 2); ?></td>
@@ -593,26 +610,26 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                 $noMealsRow.remove();
                             }
 
-                            // Check if this meal already exists in the table
-                            const $existingRow = $(`.meal-row[data-name="${escapeHtml(response.meal.name)}"]`);
+                            // Target the LAST row with this name (adjacent group at the end)
+                            const $lastRow = $(`.meal-row[data-name="${escapeHtml(response.meal.name)}"]`).last();
 
-                            if ($existingRow.length && response.groupCount > 1) {
-                                // Update existing row with new group values
+                            if ($lastRow.length && response.groupCount > 1) {
+                                // Update the last adjacent group row
                                 const displayName = response.meal.name + ' (x' + response.groupCount + ')';
-                                $existingRow.find('td:eq(0)').text(displayName);
-                                $existingRow.find('td:eq(1)').text(formatNumber(response.groupTotals.kcal));
-                                $existingRow.find('td:eq(2)').text(formatNumber(response.groupTotals.protein));
-                                $existingRow.find('td:eq(3)').text(formatNumber(response.groupTotals.carbs));
-                                $existingRow.find('td:eq(4)').text(formatNumber(response.groupTotals.fat));
-                                $existingRow.data('count', response.groupCount);
-                                $existingRow.attr('data-count', response.groupCount);
+                                $lastRow.find('td:eq(0)').text(displayName);
+                                $lastRow.find('td:eq(1)').text(formatNumber(response.groupTotals.kcal));
+                                $lastRow.find('td:eq(2)').text(formatNumber(response.groupTotals.protein));
+                                $lastRow.find('td:eq(3)').text(formatNumber(response.groupTotals.carbs));
+                                $lastRow.find('td:eq(4)').text(formatNumber(response.groupTotals.fat));
+                                $lastRow.data('count', response.groupCount);
+                                $lastRow.attr('data-count', response.groupCount);
                                 // Flash animation to show update
-                                $existingRow.addClass('highlight');
-                                setTimeout(() => $existingRow.removeClass('highlight'), 500);
+                                $lastRow.addClass('highlight');
+                                setTimeout(() => $lastRow.removeClass('highlight'), 500);
                             } else {
-                                // Create new meal row
+                                // Create new meal row (new adjacent group at end)
                                 const newRow = `
-                                    <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="${escapeHtml(response.meal.name)}" data-count="1" style="opacity: 0;">
+                                    <tr class="border-b border-stone-100 hover:bg-stone-50 meal-row cursor-pointer transition-colors" data-name="${escapeHtml(response.meal.name)}" data-count="1" data-group-start="${response.groupStart}" style="opacity: 0;">
                                         <td class=text-stone-700">${escapeHtml(response.meal.name)}</td>
                                         <td class=text-center text-stone-600 font-medium border-l border-stone-100">${formatNumber(response.mealKcal)}</td>
                                         <td class=text-center text-stone-500 border-l border-stone-100">${formatNumber(response.meal.protein)}</td>
@@ -646,7 +663,8 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                 $('.meal-row').off('click').on('click', function() {
                     const $row = $(this);
                     const mealName = $row.data('name');
-                    const count = $row.data('count') || 1;
+                    const count = parseInt($row.data('count')) || 1;
+                    const groupStart = parseInt($row.data('group-start'));
 
                     if (confirm('Delete one ' + mealName + ' from the log?')) {
 
@@ -656,6 +674,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                             data: {
                                 delete_today_meal: 1,
                                 meal_name: mealName,
+                                group_start: groupStart,
                                 target_date: selectedDate
                             },
                             dataType: 'json',
@@ -664,10 +683,21 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                     // Update totals
                                     updateTotals(response.totals);
 
+                                    // The deleted item was the last in this group
+                                    const deletedItemIndex = groupStart + count - 1;
+
                                     if (response.remainingCount === 0) {
                                         // Remove the row entirely
                                         $row.animate({opacity: 0}, 200, function() {
                                             $(this).remove();
+
+                                            // Shift group-start for all rows after the deleted item
+                                            $('.meal-row').each(function() {
+                                                const gs = parseInt($(this).data('group-start'));
+                                                if (gs > deletedItemIndex) {
+                                                    $(this).attr('data-group-start', gs - 1).data('group-start', gs - 1);
+                                                }
+                                            });
 
                                             // Show "No meals" if empty
                                             if (response.mealsCount === 0) {
@@ -685,7 +715,7 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                             }
                                         });
                                     } else {
-                                        // Update the row with new count and values
+                                        // Update the clicked row with new count and values
                                         const newCount = response.remainingCount;
                                         const displayName = newCount > 1 ? mealName + ' (x' + newCount + ')' : mealName;
 
@@ -696,6 +726,15 @@ $displayDate = date('D d/m', strtotime($selectedDate));
                                         $row.find('td:eq(4)').text(formatNumber(response.groupTotals.fat));
                                         $row.data('count', newCount);
                                         $row.attr('data-count', newCount);
+
+                                        // Shift group-start for rows after the deleted item
+                                        $('.meal-row').not($row).each(function() {
+                                            const gs = parseInt($(this).data('group-start'));
+                                            if (gs > deletedItemIndex) {
+                                                $(this).attr('data-group-start', gs - 1).data('group-start', gs - 1);
+                                            }
+                                        });
+
                                         // Flash animation to show update
                                         $row.addClass('highlight');
                                         setTimeout(() => $row.removeClass('highlight'), 500);

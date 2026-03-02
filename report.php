@@ -85,26 +85,27 @@ for ($i = 0; $i < 7; $i++) {
 
     // If we have data for this day, add it
     if (isset($dailyMeals[$dateKey])) {
-        // Group meals by name for display
+        // Group adjacent meals by name for display
         $groupedMeals = [];
         foreach ($dailyMeals[$dateKey]['meals'] as $meal) {
             $name = $meal['name'];
-            if (!isset($groupedMeals[$name])) {
-                $groupedMeals[$name] = [
+            $lastIdx = count($groupedMeals) - 1;
+            if (!empty($groupedMeals) && $groupedMeals[$lastIdx]['name'] === $name) {
+                $groupedMeals[$lastIdx]['protein'] += $meal['protein'];
+                $groupedMeals[$lastIdx]['carbs'] += $meal['carbs'];
+                $groupedMeals[$lastIdx]['fat'] += $meal['fat'];
+                $groupedMeals[$lastIdx]['count']++;
+            } else {
+                $groupedMeals[] = [
                     'name' => $name,
                     'protein' => $meal['protein'],
                     'carbs' => $meal['carbs'],
                     'fat' => $meal['fat'],
                     'count' => 1
                 ];
-            } else {
-                $groupedMeals[$name]['protein'] += $meal['protein'];
-                $groupedMeals[$name]['carbs'] += $meal['carbs'];
-                $groupedMeals[$name]['fat'] += $meal['fat'];
-                $groupedMeals[$name]['count']++;
             }
         }
-        $dayData['meals'] = array_values($groupedMeals);
+        $dayData['meals'] = $groupedMeals;
 
         // Calculate totals for this day
         foreach ($dayData['meals'] as $meal) {
